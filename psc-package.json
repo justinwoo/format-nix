@@ -5,6 +5,7 @@
   "depends": [
     "aff",
     "console",
+    "debug",
     "generics-rep",
     "node-fs-aff",
     "prelude"
