@@ -1,0 +1,15 @@
+{
+  "name": "format-nix",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Justin Woo",
+  "license": "MIT",
+  "dependencies": {
+    "tree-sitter": "^0.14.0",
+    "tree-sitter-nix": "git+https://github.com/cstrahan/tree-sitter-nix.git"
+  }
+}
