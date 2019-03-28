@@ -95,6 +95,11 @@ children :: Node -> Array Node
 children tn = tn'.children
   where tn' = unsafeCoerce tn :: { children :: Array Node }
 
+-- | Is a given Node Real or is it fake?
+isNamed :: Node -> Boolean
+isNamed tn = tn'.isNamed
+  where tn' = unsafeCoerce tn :: { isNamed :: Boolean }
+
 text :: Node -> String
 text tn = tn'.text
   where tn' = unsafeCoerce tn :: { text :: String }
