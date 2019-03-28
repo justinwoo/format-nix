@@ -6,7 +6,6 @@ import Data.Array as Array
 import Data.Foldable (surroundMap)
 import Data.List (List(..), (:))
 import Data.List as List
-import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype)
 import Unsafe.Coerce (unsafeCoerce)
 
@@ -41,8 +40,10 @@ data Expr
   | Colon
   -- Semicolon, i am leaf
   | Semicolon
-  -- Function top level
-  | Function (Array Expr)
+  -- function, input_expr: output_expr
+  | Function Expr Expr
+  -- set function, { formals_expr }: output_expr
+  | SetFunction Expr Expr
   -- the main thing, the application of crap
   | App (Array Expr)
   -- let expr in expr
@@ -134,7 +135,14 @@ readChildren = \ctr n -> ctr $ readNode <$> children n
 
 readNode' :: TypeString -> Node -> Expr
 readNode' (TypeString "comment") n = Comment (text n)
-readNode' (TypeString "function") n = readChildren Function n
+readNode' (TypeString "function") n
+  | children' <- children n
+  , (_ : formals : _ : _ : output : Nil ) <- List.fromFoldable (children n)
+    = SetFunction (readNode formals) (readNode output)
+  | children' <- children n
+  , (input : _ : output : Nil ) <- List.fromFoldable (children n)
+    = Function (readNode input) (readNode output)
+  | otherwise = Unknown "function variation" (text n)
 readNode' (TypeString "formals") n = readChildren Formals n
 readNode' (TypeString "formal") n = readChildren Formal n
 readNode' (TypeString "binds") n = readChildren Binds n
@@ -225,13 +233,14 @@ printExpr' i (AttrSet exprs) = if Array.null exprs
   then "{}"
   else "{" <> withSurround "\n" (i + 1) (removeBraces exprs) <> indent i "}"
 printExpr' i (RecAttrSet exprs) = "rec " <> printExpr' i (AttrSet exprs)
-printExpr' i (Function exprs)
-  -- set fns are formatted differently
-  | Just BraceLeft <- Array.head exprs
-  , length <- Array.length exprs
-  , first <- Array.take (length - 1) exprs
-  , Just last <- Array.last exprs = withSep " " i first <> "\n\n" <> printExpr' i last
-  | otherwise = withSep " " i exprs
+printExpr' i (Function input output) = input_ <> ": " <> output_
+  where
+    input_ = printExpr' i input
+    output_ = printExpr' i output
+printExpr' i (SetFunction input output) = "{ " <> input_ <> " }:\n\n" <> output_
+  where
+    input_ = printExpr' i input
+    output_ = printExpr' i output
 printExpr' i (Let binds expr) = let_ <> binds' <> in_ <> expr'
   where
     let_ = indent i "let\n"
