@@ -3,7 +3,7 @@ module Test.Main where
 import Prelude
 
 import Data.Array as Array
-import Data.Traversable (traverse, traverse_)
+import Data.Traversable (traverse)
 import Effect (Effect)
 import Effect.Aff (Aff, launchAff_)
 import Effect.Class.Console (log)
