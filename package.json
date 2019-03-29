@@ -10,6 +10,6 @@
   "license": "MIT",
   "dependencies": {
     "tree-sitter": "^0.14.0",
-    "tree-sitter-nix": "git+https://github.com/cstrahan/tree-sitter-nix.git"
+    "tree-sitter-nix": "github:justinwoo/tree-sitter-nix#quantity"
   }
 }

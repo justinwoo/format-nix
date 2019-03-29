@@ -6,6 +6,7 @@ import Data.Array as Array
 import Data.Foldable (surroundMap)
 import Data.List (List(..), (:))
 import Data.List as List
+import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype)
 import Unsafe.Coerce (unsafeCoerce)
 
@@ -42,7 +43,7 @@ data Expr
   | Semicolon
   -- function, input_expr: output_expr
   | Function Expr Expr
-  -- set function, { formals_expr }: output_expr
+  -- set function, { formals }: output_expr
   | SetFunction Expr Expr
   -- the main thing, the application of crap
   | App (Array Expr)
@@ -60,10 +61,12 @@ data Expr
   | AttrSet (Array Expr)
   -- a recursive attr set
   | RecAttrSet (Array Expr)
+  -- quantity
+  | Quantity Expr
   -- a list
   | List (Array Expr)
   -- bind, e.g. owner = 1;
-  | Bind (Array Expr)
+  | Bind Expr Expr
   -- multiple bind
   | Binds (Array Expr)
   -- attrpath, only contains Identifier? e.g. owner of owner = 1;
@@ -80,8 +83,8 @@ data Expr
   | EqualSign
   -- set fn args, e.g. inside of braces { pkgs ? import <nixpkgs> {} }:
   | Formals (Array Expr)
-  -- set fn arg, with identifier, quetion, app args
-  | Formal (Array Expr)
+  -- set fn arg with an identifier, where it may or may not have a default value expr
+  | Formal Expr (Maybe Expr)
   -- question mark of a formal, where the right side is the default value
   | QuestionMark
   -- unknown node type, with the type string and text contents
@@ -94,6 +97,10 @@ foreign import data Node :: Type
 children :: Node -> Array Node
 children tn = tn'.children
   where tn' = unsafeCoerce tn :: { children :: Array Node }
+
+-- | Filter for named children
+namedChildren :: Node -> Array Node
+namedChildren = Array.filter isNamed <<< children
 
 -- | Is a given Node Real or is it fake?
 isNamed :: Node -> Boolean
@@ -130,45 +137,53 @@ rootNode tree = tree'.rootNode
 readNode :: Node -> Expr
 readNode n = readNode' (type_ n) n
 
--- this is probably a tree-sitter-nix bug
-notInheritNode :: Expr -> Boolean
-notInheritNode (Inherit _) = false
-notInheritNode _ = true
-
 readChildren :: (Array Expr -> Expr) -> Node -> Expr
-readChildren = \ctr n -> ctr $ readNode <$> children n
+readChildren = \ctr n -> ctr $ readNode <$> namedChildren n
 
 readNode' :: TypeString -> Node -> Expr
 readNode' (TypeString "comment") n = Comment (text n)
 readNode' (TypeString "function") n
-  | children' <- children n
-  , (_ : formals : _ : _ : output : Nil ) <- List.fromFoldable (children n)
-    = SetFunction (readNode formals) (readNode output)
-  | children' <- children n
-  , (input : _ : output : Nil ) <- List.fromFoldable (children n)
-    = Function (readNode input) (readNode output)
+  | children' <- namedChildren n
+  , (input : output : Nil ) <- List.fromFoldable (readNode <$> namedChildren n)
+    = case input of
+        Formals _ -> SetFunction input output
+        _ -> Function input output
   | otherwise = Unknown "function variation" (text n)
 readNode' (TypeString "formals") n = readChildren Formals n
-readNode' (TypeString "formal") n = readChildren Formal n
+readNode' (TypeString "formal") n
+  | children' <- List.fromFoldable (readNode <$> namedChildren n)
+  = case children' of
+      identifier : Nil -> Formal identifier Nothing
+      identifier : default : Nil -> Formal identifier (Just default)
+      _ -> Unknown "formal varigation" (text n)
 readNode' (TypeString "binds") n = readChildren Binds n
-readNode' (TypeString "attrset") n =  AttrSet $ removeBraces (readNode <$> children n)
-readNode' (TypeString "list") n =  List $ removeBrackets (readNode <$> children n)
-readNode' (TypeString "rec_attrset") n =  RecAttrSet $ Array.drop 1 $ removeBraces (readNode <$> children n)
+readNode' (TypeString "attrset") n =  AttrSet $ removeBraces (readNode <$> namedChildren n)
+readNode' (TypeString "list") n =  List $ removeBrackets (readNode <$> namedChildren n)
+readNode' (TypeString "rec_attrset") n =  RecAttrSet $ removeBraces (readNode <$> namedChildren n)
 readNode' (TypeString "attrs") n = readChildren Attrs n
 readNode' (TypeString "app") n = readChildren App n
 readNode' (TypeString "if") n
-  | children' <- children n
-  , (_ : cond : _ : then_ : _ : else_ : Nil ) <- List.fromFoldable (children n)
+  | children' <- namedChildren n
+  , (cond : then_ : else_ : Nil ) <- List.fromFoldable (namedChildren n)
     = If (readNode cond) (readNode then_) (readNode else_)
   | otherwise = Unknown "if variation" (text n)
 readNode' (TypeString "let") n
-  | children' <- children n
-  , (_ : binds : _ : app : Nil ) <- List.fromFoldable (children n)
+  | children' <- namedChildren n
+  , (binds : app : Nil ) <- List.fromFoldable (namedChildren n)
     = Let (readNode binds) (readNode app)
   | otherwise = Unknown "let variation" (text n)
-readNode' (TypeString "bind") n = Bind $ Array.filter (not eq Semicolon) (readNode <$> children n) 
-readNode' (TypeString "inherit") n = Inherit $ Array.filter (not eq Semicolon && notInheritNode) (readNode <$> children n) 
-readNode' (TypeString "select") n = Select $ Array.filter (not eq Dot) (readNode <$> children n)
+readNode' (TypeString "quantity") n
+  | children' <- namedChildren n
+  , expr : Nil <- List.fromFoldable (readNode <$> namedChildren n)
+    = Quantity expr
+  | otherwise = Unknown "quantity variation" (text n)
+readNode' (TypeString "bind") n
+  | children' <- namedChildren n
+  , name : value : Nil <- List.fromFoldable (readNode <$> namedChildren n)
+    = Bind name value
+  | otherwise = Unknown "Bind variation" (text n)
+readNode' (TypeString "inherit") n = Inherit $ readNode <$> namedChildren n 
+readNode' (TypeString "select") n = Select $ readNode <$> namedChildren n
 readNode' (TypeString "attrpath") n = AttrPath (text n)
 readNode' (TypeString "identifier") n = Identifier (text n)
 readNode' (TypeString "spath") n = Spath (text n)
@@ -177,17 +192,17 @@ readNode' (TypeString "indented_string") n = StringIndented (text n)
 readNode' (TypeString "in") n = In
 readNode' (TypeString "then") n = Then
 readNode' (TypeString "else") n = Else
-readNode' (TypeString "{") n = BraceLeft
-readNode' (TypeString "}") n = BraceRight
-readNode' (TypeString "[") n = BracketLeft
-readNode' (TypeString "]") n = BracketRight
-readNode' (TypeString "(") n = ParenLeft
-readNode' (TypeString ")") n = ParenRight
-readNode' (TypeString "?") n = QuestionMark
-readNode' (TypeString ":") n = Colon
-readNode' (TypeString ";") n = Semicolon
-readNode' (TypeString ".") n = Dot
-readNode' (TypeString "=") n = EqualSign
+-- readNode' (TypeString "{") n = BraceLeft
+-- readNode' (TypeString "}") n = BraceRight
+-- readNode' (TypeString "[") n = BracketLeft
+-- readNode' (TypeString "]") n = BracketRight
+-- readNode' (TypeString "(") n = ParenLeft
+-- readNode' (TypeString ")") n = ParenRight
+-- readNode' (TypeString "?") n = QuestionMark
+-- readNode' (TypeString ":") n = Colon
+-- readNode' (TypeString ";") n = Semicolon
+-- readNode' (TypeString ".") n = Dot
+-- readNode' (TypeString "=") n = EqualSign
 readNode' (TypeString unknown) n = Unknown unknown (text n)
 
 printExpr :: Expr -> String
@@ -238,11 +253,11 @@ printExpr' i (AttrSet exprs) = if Array.null exprs
   then "{}"
   else "{" <> withSurround "\n" (i + 1) (removeBraces exprs) <> indent i "}"
 printExpr' i (RecAttrSet exprs) = "rec " <> printExpr' i (AttrSet exprs)
-printExpr' i (Function input output) = input_ <> ": " <> output_
+printExpr' i (SetFunction input output) = "{ " <> input_ <> " }:\n\n" <> output_
   where
     input_ = printExpr' i input
     output_ = printExpr' i output
-printExpr' i (SetFunction input output) = "{ " <> input_ <> " }:\n\n" <> output_
+printExpr' i (Function input output) = input_ <> ": " <> output_
   where
     input_ = printExpr' i input
     output_ = printExpr' i output
@@ -259,14 +274,16 @@ printExpr' i (If cond first second) = if_ <> then_ <> else_
     if_ = "if " <> printExpr' i cond
     then_ = append "\n" $ indent i' "then " <> printExpr' i' first
     else_ = append "\n" $ indent i' "else " <> printExpr' i' second
+printExpr' i (Quantity expr) = "(" <> printExpr' i expr <> ")"
 printExpr' i (Binds exprs) = withSep "\n" i exprs
-printExpr' i (Bind exprs) = indent i $ withSep " " i exprs <> ";"
+printExpr' i (Bind name value) = indent i $ printExpr' i name <> " = " <> printExpr' i value <> ";"
 printExpr' i (Inherit exprs) = indent i $ "inherit " <> withSep " " i exprs <> ";"
 printExpr' i (App exprs) = withSep " " i exprs
 printExpr' i (Formals exprs) = withSep " " i exprs
-printExpr' i (Formal exprs) = withSep " " i exprs
+printExpr' i (Formal identifier Nothing) = printExpr' i identifier
+printExpr' i (Formal identifier (Just value)) = printExpr' i identifier <> " ? " <> printExpr' i value
 printExpr' i (Select exprs) = withSep "." i exprs
-printExpr' _ s = "Not handled yet: " <> getCtorName s
+printExpr' _ s = "Unknown/Not handled yet: " <> getCtorName s
 
 removeBraces :: Array Expr -> Array Expr
 removeBraces = Array.filter (\x -> x /= BraceLeft && x /= BraceRight)

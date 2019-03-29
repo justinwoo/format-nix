@@ -3,9 +3,10 @@ module Test.Main where
 import Prelude
 
 import Data.Array as Array
+import Data.String as String
 import Data.Traversable (traverse)
 import Effect (Effect)
-import Effect.Aff (Aff, launchAff_)
+import Effect.Aff (Aff, error, launchAff_, throwError)
 import Effect.Class.Console (log)
 import FormatNix (TreeSitterParser, children, mkParser, nixLanguage, parse, printExpr, readNode, rootNode)
 import Node.Encoding (Encoding(..))
@@ -31,3 +32,6 @@ main = launchAff_ do
   results <- traverse processInput [ "test/build.nix", "test/fetch-github.nix" ]
   let output = Array.intercalate "\n\n" results <> "\n"
   writeTextFile UTF8 "test/output.txt" output
+  if String.contains (String.Pattern "Unknown") output
+    then throwError $ error "contained Unknowns"
+    else pure unit
