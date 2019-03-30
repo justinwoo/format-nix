@@ -182,7 +182,7 @@ readNode' (TypeString "bind") n
   , name : value : Nil <- List.fromFoldable (readNode <$> namedChildren n)
     = Bind name value
   | otherwise = Unknown "Bind variation" (text n)
-readNode' (TypeString "inherit") n = Inherit $ readNode <$> namedChildren n 
+readNode' (TypeString "inherit") n = Inherit $ readNode <$> namedChildren n
 readNode' (TypeString "select") n = Select $ readNode <$> namedChildren n
 readNode' (TypeString "attrpath") n = AttrPath (text n)
 readNode' (TypeString "identifier") n = Identifier (text n)
@@ -216,23 +216,23 @@ indent 1 s = "  " <> s
 indent n s = "  " <> indent (n - 1) s
 
 withSep :: String -> Indentation -> Array Expr -> String
-withSep = \sep i s -> Array.intercalate sep $ printExpr' i <$> s 
+withSep = \sep i s -> Array.intercalate sep $ printExpr' i <$> s
 
 withSurround :: String -> Indentation -> Array Expr -> String
 withSurround = \sep i s -> surroundMap sep (printExpr' i) s
 
 printExpr' :: Indentation -> Expr -> String
 printExpr' _ BraceLeft = "{"
-printExpr' _ BraceRight = "}" 
+printExpr' _ BraceRight = "}"
 printExpr' _ ParenLeft = "("
-printExpr' _ ParenRight = ")" 
+printExpr' _ ParenRight = ")"
 printExpr' _ QuestionMark = "?"
 printExpr' _ EqualSign = "="
 printExpr' _ Colon = ":"
 printExpr' _ Semicolon = ";"
 printExpr' _ In = "in"
-printExpr' _ Then = "then" 
-printExpr' _ Else = "else" 
+printExpr' _ Then = "then"
+printExpr' _ Else = "else"
 printExpr' _ (Comment str) = str
 printExpr' _ (Identifier str) = str
 printExpr' _ (Spath str) = str
