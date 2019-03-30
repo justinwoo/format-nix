@@ -251,65 +251,65 @@ fits w (PLine i x) = true
 pretty :: Int -> Doc -> String
 pretty w x = layout (best w 0 x)
 
-expr2Doc :: Int -> Expr -> Doc
-expr2Doc i (Comment str) = DText str
-expr2Doc i (Identifier str) = DText str
-expr2Doc i (Spath str) = DText str
-expr2Doc i (Path str) = DText str
-expr2Doc i (Integer str) = DText str
-expr2Doc i (AttrPath str) = DText str
-expr2Doc i (StringValue str) = DText str
-expr2Doc i (StringIndented str) = DText str
-expr2Doc _ (Unknown tag str) = DText $ "Unknown " <> tag <> " " <> str
-expr2Doc i (Unary sign expr) = DText sign <> expr2Doc i expr
-expr2Doc i (Binary x sign y) = expr2Doc i x <> DText (" " <> sign <> " ") <> expr2Doc i y
-expr2Doc i (Expression exprs) = dlines $ expr2Doc i <$> exprs
-expr2Doc i (List exprs) = left <> (DNest 1 (dlines inners)) <> right
+expr2Doc :: Expr -> Doc
+expr2Doc (Comment str) = DText str
+expr2Doc (Identifier str) = DText str
+expr2Doc (Spath str) = DText str
+expr2Doc (Path str) = DText str
+expr2Doc (Integer str) = DText str
+expr2Doc (AttrPath str) = DText str
+expr2Doc (StringValue str) = DText str
+expr2Doc (StringIndented str) = DText str
+expr2Doc (Unknown tag str) = DText $ "Unknown " <> tag <> " " <> str
+expr2Doc (Unary sign expr) = DText sign <> expr2Doc expr
+expr2Doc (Binary x sign y) = expr2Doc x <> DText (" " <> sign <> " ") <> expr2Doc y
+expr2Doc (Expression exprs) = dlines $ expr2Doc <$> exprs
+expr2Doc (List exprs) = left <> (DNest 1 (dlines inners)) <> right
   where
-    inners = expr2Doc (i + 1) <$> exprs
+    inners = expr2Doc <$> exprs
     left = DText "["
     right = DLine <> DText "]"
-expr2Doc i (Attrs exprs) = intercalate (DText " ") $ expr2Doc i <$> exprs
-expr2Doc i (AttrSet exprs) = if Array.null exprs
+expr2Doc (Attrs exprs) = intercalate (DText " ") $ expr2Doc <$> exprs
+expr2Doc (AttrSet exprs) = if Array.null exprs
   then DText "{}"
   else do
     let left = DText "{"
     let right = DLine <> DText "}"
-    let inners = dlines $ expr2Doc 1 <$> exprs
+    let inners = dlines $ expr2Doc <$> exprs
     left <> DNest 1 inners <> right
-expr2Doc i (RecAttrSet exprs) = DText "rec " <> expr2Doc i (AttrSet exprs)
-expr2Doc i (SetFunction input output) =
+expr2Doc (RecAttrSet exprs) = DText "rec " <> expr2Doc (AttrSet exprs)
+expr2Doc (SetFunction input output) =
   DText "{" <> input_ <> DText " }:" <> DLine <> DLine <> output_
   where
-    input_ = expr2Doc i input
-    output_ = expr2Doc i output
-expr2Doc i (Function input output) = input_ <> DText ": " <> output_
+    input_ = expr2Doc input
+    output_ = expr2Doc output
+expr2Doc (Function input output) = input_ <> DText ": " <> output_
   where
-    input_ = expr2Doc i input
-    output_ = expr2Doc i output
-expr2Doc i (Let binds expr) = let_ <> binds' <> in_ <> expr'
+    input_ = expr2Doc input
+    output_ = expr2Doc output
+expr2Doc (Let binds expr) = let_ <> binds' <> in_ <> expr'
   where
     let_ = DText "let"
     in_ = DLine <> DText "in "
-    binds' = DNest 1 $ expr2Doc 1 binds
-    expr' = expr2Doc 1 expr
-expr2Doc i (If cond first second) = if_ <> then_ <> else_
+    binds' = DNest 1 $ expr2Doc binds
+    expr' = expr2Doc expr
+expr2Doc (If cond first second) = if_ <> then_ <> else_
   where
-    if_ = DText "if " <> expr2Doc i cond
-    then_ = DNest 1 $ DLine <> (DText "then ") <> expr2Doc 1 first
-    else_ = DNest 1 $ DLine <> (DText "else ") <> expr2Doc 1 second
-expr2Doc i (Quantity expr) = DText "(" <> expr2Doc i expr <> DText ")"
-expr2Doc i (Binds exprs) = dlines $ expr2Doc 1 <$> exprs
-expr2Doc i (Bind name value) =
-  expr2Doc i name <> DText " = " <> expr2Doc i value <> DText ";"
-expr2Doc i (Inherit exprs) = DText "inherit" <> inner <> DText ";"
+    if_ = DText "if " <> expr2Doc cond
+    then_ = DNest 1 $ DLine <> (DText "then ") <> expr2Doc first
+    else_ = DNest 1 $ DLine <> (DText "else ") <> expr2Doc second
+expr2Doc (Quantity expr) = DText "(" <> expr2Doc expr <> DText ")"
+expr2Doc (Binds exprs) = dlines $ expr2Doc <$> exprs
+expr2Doc (Bind name value) =
+  expr2Doc name <> DText " = " <> expr2Doc value <> DText ";"
+expr2Doc (Inherit exprs) = DText "inherit" <> inner <> DText ";"
   where
-    inner = dwords $ expr2Doc i <$> exprs
-expr2Doc i (App fn arg) = expr2Doc i fn <> DText " " <> expr2Doc i arg
-expr2Doc i (Formals exprs) = dwords $ expr2Doc i <$> exprs
-expr2Doc i (Formal identifier Nothing) = expr2Doc i identifier
-expr2Doc i (Formal identifier (Just value)) = expr2Doc i identifier <> DText " ? " <> expr2Doc i value
-expr2Doc i (Select value selector) = expr2Doc i value <> DText "." <> expr2Doc i selector
+    inner = dwords $ expr2Doc <$> exprs
+expr2Doc (App fn arg) = expr2Doc fn <> DText " " <> expr2Doc arg
+expr2Doc (Formals exprs) = dwords $ expr2Doc <$> exprs
+expr2Doc (Formal identifier Nothing) = expr2Doc identifier
+expr2Doc (Formal identifier (Just value)) = expr2Doc identifier <> DText " ? " <> expr2Doc value
+expr2Doc (Select value selector) = expr2Doc value <> DText "." <> expr2Doc selector
 
 dwords :: forall f. Foldable f => f Doc -> Doc
 dwords xs = foldMap (\x -> DText " " <> x) xs
@@ -318,4 +318,4 @@ dlines :: forall f. Foldable f => f Doc -> Doc
 dlines xs = foldMap (\x -> DLine <> x) xs
 
 printExpr :: Expr -> String
-printExpr = pretty 80 <<< expr2Doc 0
+printExpr = pretty 80 <<< expr2Doc
