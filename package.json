@@ -1,7 +1,7 @@
 {
-  "name": "format-nix",
+  "name": "@justinwoo/format-nix",
   "version": "1.0.0",
-  "description": "",
+  "description": "Formatter for Nix using tree-sitter-nix",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -11,5 +11,21 @@
   "dependencies": {
     "tree-sitter": "^0.14.0",
     "tree-sitter-nix": "github:justinwoo/tree-sitter-nix#quantity"
-  }
+  },
+  "directories": {
+    "test": "test"
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/justinwoo/format-nix.git"
+  },
+  "bugs": {
+    "url": "https://github.com/justinwoo/format-nix/issues"
+  },
+  "homepage": "https://github.com/justinwoo/format-nix#readme",
+  "keywords": [
+    "Nix",
+    "tree-sitter-nix"
+  ]
 }
