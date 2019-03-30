@@ -3,11 +3,14 @@ module FormatNix where
 import Prelude
 
 import Data.Array as Array
-import Data.Foldable (surroundMap)
+import Data.Foldable (class Foldable)
 import Data.List (List(..), (:))
 import Data.List as List
 import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype)
+import Data.String as String
+import Data.Traversable (foldMap)
+import Data.Tuple (Tuple(..))
 import Unsafe.Coerce (unsafeCoerce)
 
 data Expr
@@ -23,8 +26,6 @@ data Expr
   | StringIndented String
   -- Identifier
   | Identifier String
-  -- spath
-  | SPath String
   -- function, input_expr: output_expr
   | Function Expr Expr
   -- set function, { formals }: output_expr
@@ -171,75 +172,132 @@ readNode' (TypeString "string") n = StringValue (text n)
 readNode' (TypeString "indented_string") n = StringIndented (text n)
 readNode' (TypeString unknown) n = Unknown unknown (text n)
 
+-- | "a prettier printer" by wadler
+data Doc
+  = DNil
+  | DAppend Doc Doc
+  | DNest Int Doc
+  | DText String
+  | DLine
+  | DAlt Doc Doc
+
+instance sgDoc :: Semigroup Doc where
+  append = DAppend
+
+instance mDoc :: Monoid Doc where
+  mempty = DNil
+
+data Print
+  = PNil
+  | PText String Print
+  | PLine Int Print
+
+group :: Doc -> Doc
+group x = DAlt (flatten x) x
+
+flatten :: Doc -> Doc
+flatten DNil = DNil
+flatten (DAppend x y) = DAppend (flatten x) (flatten y)
+flatten (DNest i x) = DNest i (flatten x)
+flatten (DText s) = DText s
+flatten DLine = DText " "
+flatten (DAlt x y) = flatten x
+
+layout :: Print -> String
+layout PNil = ""
+layout (PText str x) = str <> layout x
+layout (PLine i x) = "\n" <> indent i <> layout x
+
+indent :: Int -> String
+indent 0 = ""
+indent 1 = "  "
+indent n = "  " <> indent (n - 1)
+
+best :: Int -> Int -> Doc -> Print
+best w k x = be w k (pure (Tuple 0 x))
+
+be :: Int -> Int -> List (Tuple Int Doc) -> Print
+be w k Nil = PNil
+be w k (Tuple i DNil : z) = be w k z
+be w k (Tuple i (DAppend x y) : z) = be w k (Tuple i x : Tuple i y : z)
+be w k (Tuple i (DNest j x) : z) = be w k ((Tuple (i + j) x) : z)
+be w k (Tuple i (DText s) : z) = PText s (be w (k + String.length s) z)
+be w k (Tuple i DLine : z) = PLine i (be w i z)
+be w k (Tuple i (DAlt x y) : z) = better w k (be w k ((Tuple i x) : z)) (be w k ((Tuple i y) : z))
+
+better :: Int -> Int -> Print -> Print -> Print
+better w k x y = if fits (w - k) x then x else y
+
+fits :: Int -> Print -> Boolean
+fits w x | w < 0 = false
+fits w PNil = true
+fits w (PText s x) = fits (w - String.length s) x
+fits w (PLine i x) = true
+
+pretty :: Int -> Doc -> String
+pretty w x = layout (best w 0 x)
+
+expr2Doc :: Int -> Expr -> Doc
+expr2Doc i (Comment str) = DText str
+expr2Doc i (Identifier str) = DText str
+expr2Doc i (Spath str) = DText str
+expr2Doc i (AttrPath str) = DText str
+expr2Doc i (StringValue str) = DText str
+expr2Doc i (StringIndented str) = DText str
+expr2Doc _ (Unknown tag str) = DText $ "Unknown " <> tag <> " " <> str
+expr2Doc i (Expression exprs) = dlines $ expr2Doc i <$> exprs
+expr2Doc i (List exprs) = left <> (DNest 1 (dlines inners)) <> right
+  where
+    inners = expr2Doc (i + 1) <$> exprs
+    left = DText "["
+    right = DLine <> DText "]"
+expr2Doc i (Attrs exprs) = foldMap (expr2Doc i) exprs
+expr2Doc i (AttrSet exprs) = if Array.null exprs
+  then DText "{}"
+  else do
+    let left = DText "{"
+    let right = DLine <> DText "}"
+    let inners = dlines $ expr2Doc 1 <$> exprs
+    left <> DNest 1 inners <> right
+expr2Doc i (RecAttrSet exprs) = DText "rec " <> expr2Doc i (AttrSet exprs)
+expr2Doc i (SetFunction input output) =
+  DText "{" <> input_ <> DText " }:" <> DLine <> DLine <> output_
+  where
+    input_ = expr2Doc i input
+    output_ = expr2Doc i output
+expr2Doc i (Function input output) = input_ <> DText ": " <> output_
+  where
+    input_ = expr2Doc i input
+    output_ = expr2Doc i output
+expr2Doc i (Let binds expr) = let_ <> binds' <> in_ <> expr'
+  where
+    let_ = DText "let"
+    in_ = DLine <> DText "in "
+    binds' = DNest 1 $ expr2Doc 1 binds
+    expr' = expr2Doc 1 expr
+expr2Doc i (If cond first second) = if_ <> then_ <> else_
+  where
+    if_ = DText "if " <> expr2Doc i cond
+    then_ = DNest 1 $ DLine <> (DText "then ") <> expr2Doc 1 first
+    else_ = DNest 1 $ DLine <> (DText "else ") <> expr2Doc 1 second
+expr2Doc i (Quantity expr) = DText "(" <> expr2Doc i expr <> DText ")"
+expr2Doc i (Binds exprs) = dlines $ expr2Doc 1 <$> exprs
+expr2Doc i (Bind name value) =
+  expr2Doc i name <> DText " = " <> expr2Doc i value <> DText ";"
+expr2Doc i (Inherit exprs) = DText "inherit " <> inner <> DText ";"
+  where
+    inner = dwords $ expr2Doc i <$> exprs
+expr2Doc i (App fn arg) = expr2Doc i fn <> DText " " <> expr2Doc i arg
+expr2Doc i (Formals exprs) = dwords $ expr2Doc i <$> exprs
+expr2Doc i (Formal identifier Nothing) = expr2Doc i identifier
+expr2Doc i (Formal identifier (Just value)) = expr2Doc i identifier <> DText " ? " <> expr2Doc i value
+expr2Doc i (Select value selector) = expr2Doc i value <> DText "." <> expr2Doc i selector
+
+dwords :: forall f. Foldable f => f Doc -> Doc
+dwords xs = foldMap (\x -> DText " " <> x) xs
+
+dlines :: forall f. Foldable f => f Doc -> Doc
+dlines xs = foldMap (\x -> DLine <> x) xs
+
 printExpr :: Expr -> String
-printExpr = printExpr' 0
-
-type Indentation = Int
-
-indent :: Indentation -> String -> String
-indent 0 s = s
-indent 1 s = "  " <> s
-indent n s = "  " <> indent (n - 1) s
-
-withSep :: String -> Indentation -> Array Expr -> String
-withSep = \sep i s -> Array.intercalate sep $ printExpr' i <$> s
-
-withSurround :: String -> Indentation -> Array Expr -> String
-withSurround = \sep i s -> surroundMap sep (printExpr' i) s
-
-printExpr' :: Indentation -> Expr -> String
-printExpr' _ (Comment str) = str
-printExpr' _ (Identifier str) = str
-printExpr' _ (Spath str) = str
-printExpr' _ (AttrPath str) = str
-printExpr' _ (StringValue str) = str
-printExpr' i (StringIndented str) = "\n" <> indent (i + 1) str
-printExpr' _ (Unknown tag str) = "Unknown " <> tag <> " " <> str
-printExpr' i (Expression exprs) = withSep "\n" i exprs
-printExpr' i (List exprs) = left <> withSep sep i'' exprs <> right
-  where
-    i' = i + 1
-    i'' = i + 2
-    sep = "\n" <> indent i' ""
-    left = "[" <> sep
-    right = "\n" <> indent i "]"
-printExpr' i (Attrs exprs) = withSep "\n" i exprs
-printExpr' i (AttrSet exprs) = if Array.null exprs
-  then "{}"
-  else "{" <> withSurround "\n" (i + 1) exprs <> indent i "}"
-printExpr' i (RecAttrSet exprs) = "rec " <> printExpr' i (AttrSet exprs)
-printExpr' i (SetFunction input output) = "{ " <> input_ <> " }:\n\n" <> output_
-  where
-    input_ = printExpr' i input
-    output_ = printExpr' i output
-printExpr' i (Function input output) = input_ <> ": " <> output_
-  where
-    input_ = printExpr' i input
-    output_ = printExpr' i output
-printExpr' i (Let binds expr) = let_ <> binds' <> in_ <> expr'
-  where
-    let_ = indent i "let\n"
-    in_ = "\n" <> indent i "in\n" <> indent (i + 1) ""
-    binds' = printExpr' (i + 1) binds
-    expr' = printExpr' (i + 1) expr
-printExpr' i (If cond first second) = if_ <> then_ <> else_
-  where
-    i' = i + 1
-    i'' = i + 2
-    if_ = "if " <> printExpr' i cond
-    then_ = append "\n" $ indent i' "then " <> printExpr' i' first
-    else_ = append "\n" $ indent i' "else " <> printExpr' i' second
-printExpr' i (Quantity expr) = "(" <> printExpr' i expr <> ")"
-printExpr' i (Binds exprs) = withSep "\n" i exprs
-printExpr' i (Bind name value) = indent i $ printExpr' i name <> " = " <> printExpr' i value <> ";"
-printExpr' i (Inherit exprs) = indent i $ "inherit " <> withSep " " i exprs <> ";"
-printExpr' i (App fn arg) = printExpr' i fn <> " " <> printExpr' i arg
-printExpr' i (Formals exprs) = withSep " " i exprs
-printExpr' i (Formal identifier Nothing) = printExpr' i identifier
-printExpr' i (Formal identifier (Just value)) = printExpr' i identifier <> " ? " <> printExpr' i value
-printExpr' i (Select value selector) = printExpr' i value <> "." <> printExpr' i selector
-printExpr' _ s = "Unknown/Not handled yet: " <> getCtorName s
-
-getCtorName :: Expr -> String
-getCtorName e = e'.constructor.name
-  where e' = unsafeCoerce e :: { constructor :: { name :: String } }
+printExpr = pretty 80 <<< expr2Doc 0
