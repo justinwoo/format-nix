@@ -288,7 +288,7 @@ expr2Doc i (Quantity expr) = DText "(" <> expr2Doc i expr <> DText ")"
 expr2Doc i (Binds exprs) = dlines $ expr2Doc 1 <$> exprs
 expr2Doc i (Bind name value) =
   expr2Doc i name <> DText " = " <> expr2Doc i value <> DText ";"
-expr2Doc i (Inherit exprs) = DText "inherit " <> inner <> DText ";"
+expr2Doc i (Inherit exprs) = DText "inherit" <> inner <> DText ";"
   where
     inner = dwords $ expr2Doc i <$> exprs
 expr2Doc i (App fn arg) = expr2Doc i fn <> DText " " <> expr2Doc i arg

@@ -6,7 +6,7 @@ import Data.Array as Array
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Effect.Aff (launchAff_)
-import Effect.Class.Console (error)
+import Effect.Class.Console (error, log)
 import FormatNix (TreeSitterParser, children, mkParser, nixLanguage, parse, printExpr, readNode, rootNode)
 import Node.Encoding (Encoding(..))
 import Node.FS.Aff (readTextFile, writeTextFile)
@@ -26,6 +26,7 @@ main = launchAff_ do
       let nodes = readNode <$> children node
       let output = Array.intercalate "\n" $ printExpr <$> nodes
       writeTextFile UTF8 fileName output
+      log $ "formatted " <> fileName <> "."
 
 needFileArg :: String
 needFileArg = """

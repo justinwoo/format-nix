@@ -3,7 +3,11 @@
   "version": "1.0.0",
   "description": "Formatter for Nix using tree-sitter-nix",
   "main": "index.js",
+  "bin": {
+    "format-nix": "bin/index.js"
+  },
   "scripts": {
+    "mkbin": "mkdir -p bin && pulp build --to bin/output.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Justin Woo",
