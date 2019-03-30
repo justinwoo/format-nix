@@ -32,6 +32,7 @@ main = launchAff_ do
   results <- traverse processInput
     [ "test/build.nix"
     , "test/import.nix"
+    , "test/signs.nix"
     , "test/fetch-github.nix"
     ]
   let output = Array.intercalate "\n\n" results <> "\n"

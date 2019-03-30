@@ -24,8 +24,14 @@ data Expr
   | Path String
   -- "hi"
   | StringValue String
+  -- integer, e.g. 123
+  | Integer String
   -- indented string
   | StringIndented String
+  -- unary, e.g. !x, -a
+  | Unary String Expr
+  -- binary, e.g. a < b
+  | Binary Expr String Expr
   -- Identifier
   | Identifier String
   -- function, input_expr: output_expr
@@ -118,8 +124,7 @@ readChildren = \ctr n -> ctr $ readNode <$> namedChildren n
 readNode' :: TypeString -> Node -> Expr
 readNode' (TypeString "comment") n = Comment (text n)
 readNode' (TypeString "function") n
-  | children' <- namedChildren n
-  , (input : output : Nil ) <- List.fromFoldable (readNode <$> namedChildren n)
+  | (input : output : Nil ) <- List.fromFoldable (readNode <$> namedChildren n)
     = case input of
         Formals _ -> SetFunction input output
         _ -> Function input output
@@ -137,23 +142,19 @@ readNode' (TypeString "list") n =  List $ readNode <$> namedChildren n
 readNode' (TypeString "rec_attrset") n =  RecAttrSet $ readNode <$> namedChildren n
 readNode' (TypeString "attrs") n = readChildren Attrs n
 readNode' (TypeString "app") n
-  | children' <- namedChildren n
-  , (fn : arg : Nil ) <- List.fromFoldable (readNode <$> namedChildren n)
+  | (fn : arg : Nil ) <- List.fromFoldable (readNode <$> namedChildren n)
     = App fn arg
   | otherwise = Unknown "App variation" (text n)
 readNode' (TypeString "if") n
-  | children' <- namedChildren n
-  , (cond : then_ : else_ : Nil ) <- List.fromFoldable (namedChildren n)
+  | (cond : then_ : else_ : Nil ) <- List.fromFoldable (namedChildren n)
     = If (readNode cond) (readNode then_) (readNode else_)
   | otherwise = Unknown "if variation" (text n)
 readNode' (TypeString "let") n
-  | children' <- namedChildren n
-  , (binds : app : Nil ) <- List.fromFoldable (namedChildren n)
+  | (binds : app : Nil ) <- List.fromFoldable (namedChildren n)
     = Let (readNode binds) (readNode app)
   | otherwise = Unknown "let variation" (text n)
 readNode' (TypeString "quantity") n
-  | children' <- namedChildren n
-  , expr : Nil <- List.fromFoldable (readNode <$> namedChildren n)
+  | expr : Nil <- List.fromFoldable (readNode <$> namedChildren n)
     = Quantity expr
   | otherwise = Unknown "quantity variation" (text n)
 readNode' (TypeString "bind") n
@@ -163,15 +164,25 @@ readNode' (TypeString "bind") n
   | otherwise = Unknown "Bind variation" (text n)
 readNode' (TypeString "inherit") n = Inherit $ readNode <$> namedChildren n
 readNode' (TypeString "select") n
-  | children' <- namedChildren n
-  , value : selector : Nil <- List.fromFoldable (readNode <$> namedChildren n)
+  | value : selector : Nil <- List.fromFoldable (readNode <$> namedChildren n)
     = Select value selector
   | otherwise = Unknown "Select variation" (text n)
+readNode' (TypeString "unary") n
+  | children' <- children n
+  , sign : expr : Nil <- List.fromFoldable children'
+    = Unary (text sign) (readNode expr)
+  | otherwise = Unknown "Unary variation" (text n)
+readNode' (TypeString "binary") n
+  | children' <- children n
+  , x : sign : y : Nil <- List.fromFoldable children'
+    = Binary (readNode x) (text sign) (readNode y)
+  | otherwise = Unknown "Binary variation" (text n)
 readNode' (TypeString "attrpath") n = AttrPath (text n)
 readNode' (TypeString "identifier") n = Identifier (text n)
 readNode' (TypeString "spath") n = Spath (text n)
 readNode' (TypeString "path") n = Path (text n)
 readNode' (TypeString "string") n = StringValue (text n)
+readNode' (TypeString "integer") n = Integer (text n)
 readNode' (TypeString "indented_string") n = StringIndented (text n)
 readNode' (TypeString unknown) n = Unknown unknown (text n)
 
@@ -245,10 +256,13 @@ expr2Doc i (Comment str) = DText str
 expr2Doc i (Identifier str) = DText str
 expr2Doc i (Spath str) = DText str
 expr2Doc i (Path str) = DText str
+expr2Doc i (Integer str) = DText str
 expr2Doc i (AttrPath str) = DText str
 expr2Doc i (StringValue str) = DText str
 expr2Doc i (StringIndented str) = DText str
 expr2Doc _ (Unknown tag str) = DText $ "Unknown " <> tag <> " " <> str
+expr2Doc i (Unary sign expr) = DText sign <> expr2Doc i expr
+expr2Doc i (Binary x sign y) = expr2Doc i x <> DText (" " <> sign <> " ") <> expr2Doc i y
 expr2Doc i (Expression exprs) = dlines $ expr2Doc i <$> exprs
 expr2Doc i (List exprs) = left <> (DNest 1 (dlines inners)) <> right
   where
