@@ -25,38 +25,16 @@ data Expr
   | Identifier String
   -- spath
   | SPath String
-  -- {, i am leaf
-  | BraceLeft
-  -- }, i am leaf
-  | BraceRight
-  -- [, i am leaf
-  | BracketLeft
-  -- ], i am leaf
-  | BracketRight
-  -- (, i am leaf
-  | ParenLeft
-  -- ), i am leaf
-  | ParenRight
-  -- Colon, i am leaf
-  | Colon
-  -- Semicolon, i am leaf
-  | Semicolon
   -- function, input_expr: output_expr
   | Function Expr Expr
   -- set function, { formals }: output_expr
   | SetFunction Expr Expr
-  -- the main thing, the application of crap
-  | App (Array Expr)
+  -- the main thing, application of a function with its arg?
+  | App Expr Expr
   -- let expr in expr
   | Let Expr Expr
   -- if cond_exprs then_exprs else_exprs
   | If Expr Expr Expr
-  -- then, leaf
-  | Then
-  -- else, leaf
-  | Else
-  -- in of let-in, leaf
-  | In
   -- a set
   | AttrSet (Array Expr)
   -- a recursive attr set
@@ -71,12 +49,12 @@ data Expr
   | Binds (Array Expr)
   -- attrpath, only contains Identifier? e.g. owner of owner = 1;
   | AttrPath String
-  -- inherit, note that first child might need to be thrown away ("inherit" literal)
+  -- inherit
   | Inherit (Array Expr)
   -- attributes for inherit?
   | Attrs (Array Expr)
-  -- as in `set.attr`, note the leaf Dot in the middle
-  | Select (Array Expr)
+  -- as in `set.attr`, Select expr selector_expr
+  | Select Expr Expr
   -- Dot, i am a leaf
   | Dot
   -- =, i am a leaf
@@ -157,11 +135,15 @@ readNode' (TypeString "formal") n
       identifier : default : Nil -> Formal identifier (Just default)
       _ -> Unknown "formal varigation" (text n)
 readNode' (TypeString "binds") n = readChildren Binds n
-readNode' (TypeString "attrset") n =  AttrSet $ removeBraces (readNode <$> namedChildren n)
-readNode' (TypeString "list") n =  List $ removeBrackets (readNode <$> namedChildren n)
-readNode' (TypeString "rec_attrset") n =  RecAttrSet $ removeBraces (readNode <$> namedChildren n)
+readNode' (TypeString "attrset") n =  AttrSet $ readNode <$> namedChildren n
+readNode' (TypeString "list") n =  List $ readNode <$> namedChildren n
+readNode' (TypeString "rec_attrset") n =  RecAttrSet $ readNode <$> namedChildren n
 readNode' (TypeString "attrs") n = readChildren Attrs n
-readNode' (TypeString "app") n = readChildren App n
+readNode' (TypeString "app") n
+  | children' <- namedChildren n
+  , (fn : arg : Nil ) <- List.fromFoldable (readNode <$> namedChildren n)
+    = App fn arg
+  | otherwise = Unknown "App variation" (text n)
 readNode' (TypeString "if") n
   | children' <- namedChildren n
   , (cond : then_ : else_ : Nil ) <- List.fromFoldable (namedChildren n)
@@ -183,26 +165,16 @@ readNode' (TypeString "bind") n
     = Bind name value
   | otherwise = Unknown "Bind variation" (text n)
 readNode' (TypeString "inherit") n = Inherit $ readNode <$> namedChildren n
-readNode' (TypeString "select") n = Select $ readNode <$> namedChildren n
+readNode' (TypeString "select") n
+  | children' <- namedChildren n
+  , value : selector : Nil <- List.fromFoldable (readNode <$> namedChildren n)
+    = Select value selector
+  | otherwise = Unknown "Select variation" (text n)
 readNode' (TypeString "attrpath") n = AttrPath (text n)
 readNode' (TypeString "identifier") n = Identifier (text n)
 readNode' (TypeString "spath") n = Spath (text n)
 readNode' (TypeString "string") n = StringValue (text n)
 readNode' (TypeString "indented_string") n = StringIndented (text n)
-readNode' (TypeString "in") n = In
-readNode' (TypeString "then") n = Then
-readNode' (TypeString "else") n = Else
--- readNode' (TypeString "{") n = BraceLeft
--- readNode' (TypeString "}") n = BraceRight
--- readNode' (TypeString "[") n = BracketLeft
--- readNode' (TypeString "]") n = BracketRight
--- readNode' (TypeString "(") n = ParenLeft
--- readNode' (TypeString ")") n = ParenRight
--- readNode' (TypeString "?") n = QuestionMark
--- readNode' (TypeString ":") n = Colon
--- readNode' (TypeString ";") n = Semicolon
--- readNode' (TypeString ".") n = Dot
--- readNode' (TypeString "=") n = EqualSign
 readNode' (TypeString unknown) n = Unknown unknown (text n)
 
 printExpr :: Expr -> String
@@ -222,17 +194,6 @@ withSurround :: String -> Indentation -> Array Expr -> String
 withSurround = \sep i s -> surroundMap sep (printExpr' i) s
 
 printExpr' :: Indentation -> Expr -> String
-printExpr' _ BraceLeft = "{"
-printExpr' _ BraceRight = "}"
-printExpr' _ ParenLeft = "("
-printExpr' _ ParenRight = ")"
-printExpr' _ QuestionMark = "?"
-printExpr' _ EqualSign = "="
-printExpr' _ Colon = ":"
-printExpr' _ Semicolon = ";"
-printExpr' _ In = "in"
-printExpr' _ Then = "then"
-printExpr' _ Else = "else"
 printExpr' _ (Comment str) = str
 printExpr' _ (Identifier str) = str
 printExpr' _ (Spath str) = str
@@ -251,7 +212,7 @@ printExpr' i (List exprs) = left <> withSep sep i'' exprs <> right
 printExpr' i (Attrs exprs) = withSep "\n" i exprs
 printExpr' i (AttrSet exprs) = if Array.null exprs
   then "{}"
-  else "{" <> withSurround "\n" (i + 1) (removeBraces exprs) <> indent i "}"
+  else "{" <> withSurround "\n" (i + 1) exprs <> indent i "}"
 printExpr' i (RecAttrSet exprs) = "rec " <> printExpr' i (AttrSet exprs)
 printExpr' i (SetFunction input output) = "{ " <> input_ <> " }:\n\n" <> output_
   where
@@ -278,18 +239,12 @@ printExpr' i (Quantity expr) = "(" <> printExpr' i expr <> ")"
 printExpr' i (Binds exprs) = withSep "\n" i exprs
 printExpr' i (Bind name value) = indent i $ printExpr' i name <> " = " <> printExpr' i value <> ";"
 printExpr' i (Inherit exprs) = indent i $ "inherit " <> withSep " " i exprs <> ";"
-printExpr' i (App exprs) = withSep " " i exprs
+printExpr' i (App fn arg) = printExpr' i fn <> " " <> printExpr' i arg
 printExpr' i (Formals exprs) = withSep " " i exprs
 printExpr' i (Formal identifier Nothing) = printExpr' i identifier
 printExpr' i (Formal identifier (Just value)) = printExpr' i identifier <> " ? " <> printExpr' i value
-printExpr' i (Select exprs) = withSep "." i exprs
+printExpr' i (Select value selector) = printExpr' i value <> "." <> printExpr' i selector
 printExpr' _ s = "Unknown/Not handled yet: " <> getCtorName s
-
-removeBraces :: Array Expr -> Array Expr
-removeBraces = Array.filter (\x -> x /= BraceLeft && x /= BraceRight)
-
-removeBrackets :: Array Expr -> Array Expr
-removeBrackets = Array.filter (\x -> x /= BracketLeft && x /= BracketRight)
 
 getCtorName :: Expr -> String
 getCtorName e = e'.constructor.name
