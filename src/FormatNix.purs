@@ -55,16 +55,10 @@ data Expr
   | Attrs (Array Expr)
   -- as in `set.attr`, Select expr selector_expr
   | Select Expr Expr
-  -- Dot, i am a leaf
-  | Dot
-  -- =, i am a leaf
-  | EqualSign
   -- set fn args, e.g. inside of braces { pkgs ? import <nixpkgs> {} }:
   | Formals (Array Expr)
   -- set fn arg with an identifier, where it may or may not have a default value expr
   | Formal Expr (Maybe Expr)
-  -- question mark of a formal, where the right side is the default value
-  | QuestionMark
   -- unknown node type, with the type string and text contents
   | Unknown String String
 derive instance eqExpr :: Eq Expr
