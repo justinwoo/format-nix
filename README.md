@@ -2,7 +2,7 @@
 
 A simple formatter for Nix using [tree-parser-nix](https://github.com/cstrahan/tree-sitter-nix).
 
-Submit bugs by adding PRs for files that fail and adding the input to <tests/Main.purs>.
+Submit bugs by adding PRs for files that fail and adding the input to [tests](tests/Main.purs).
 
 ## Development setup
 
@@ -25,3 +25,5 @@ Get PureScript and Pulp.
 > format-nix  test/build.nix
 formatted test/build.nix.
 ```
+
+See the example output from the tests here: [tests/output.nix](tests/output.nix)

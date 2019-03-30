@@ -37,7 +37,7 @@ main = launchAff_ do
     , "test/fetch-github.nix"
     ]
   let output = Array.intercalate "\n\n" results
-  writeTextFile UTF8 "test/output.txt" output
+  writeTextFile UTF8 "test/output.nix" output
   if String.contains (String.Pattern "Unknown") output
     then throwError $ error "contained Unknowns"
     else pure unit
