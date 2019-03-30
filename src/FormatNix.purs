@@ -9,7 +9,7 @@ import Data.List as List
 import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype)
 import Data.String as String
-import Data.Traversable (foldMap)
+import Data.Traversable (foldMap, intercalate)
 import Data.Tuple (Tuple(..))
 import Unsafe.Coerce (unsafeCoerce)
 
@@ -269,7 +269,7 @@ expr2Doc i (List exprs) = left <> (DNest 1 (dlines inners)) <> right
     inners = expr2Doc (i + 1) <$> exprs
     left = DText "["
     right = DLine <> DText "]"
-expr2Doc i (Attrs exprs) = foldMap (expr2Doc i) exprs
+expr2Doc i (Attrs exprs) = intercalate (DText " ") $ expr2Doc i <$> exprs
 expr2Doc i (AttrSet exprs) = if Array.null exprs
   then DText "{}"
   else do

@@ -33,6 +33,7 @@ main = launchAff_ do
     [ "test/build.nix"
     , "test/import.nix"
     , "test/signs.nix"
+    , "test/inherits.nix"
     , "test/fetch-github.nix"
     ]
   let output = Array.intercalate "\n\n" results <> "\n"

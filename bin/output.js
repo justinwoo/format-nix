@@ -3609,7 +3609,7 @@ var PS = {};
               return Data_Semigroup.append(sgDoc)(left)(Data_Semigroup.append(sgDoc)(new DNest(1, dlines(Data_Foldable.foldableArray)(inners)))(right));
           };
           if (v1 instanceof Attrs) {
-              return Data_Foldable.foldMap(Data_Foldable.foldableArray)(mDoc)(expr2Doc(v))(v1.value0);
+              return Data_Foldable.intercalate(Data_Foldable.foldableArray)(mDoc)(new DText(" "))(Data_Functor.map(Data_Functor.functorArray)(expr2Doc(v))(v1.value0));
           };
           if (v1 instanceof AttrSet) {
               var $241 = Data_Array["null"](v1.value0);
