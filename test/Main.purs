@@ -29,7 +29,11 @@ processInput filepath = do
 
 main :: Effect Unit
 main = launchAff_ do
-  results <- traverse processInput [ "test/build.nix", "test/fetch-github.nix" ]
+  results <- traverse processInput
+    [ "test/build.nix"
+    , "test/import.nix"
+    , "test/fetch-github.nix"
+    ]
   let output = Array.intercalate "\n\n" results <> "\n"
   writeTextFile UTF8 "test/output.txt" output
   if String.contains (String.Pattern "Unknown") output

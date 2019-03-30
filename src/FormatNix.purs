@@ -20,6 +20,8 @@ data Expr
   | Comment String
   -- <nixpkgs>
   | Spath String
+  -- ../whatever.nix
+  | Path String
   -- "hi"
   | StringValue String
   -- indented string
@@ -168,6 +170,7 @@ readNode' (TypeString "select") n
 readNode' (TypeString "attrpath") n = AttrPath (text n)
 readNode' (TypeString "identifier") n = Identifier (text n)
 readNode' (TypeString "spath") n = Spath (text n)
+readNode' (TypeString "path") n = Path (text n)
 readNode' (TypeString "string") n = StringValue (text n)
 readNode' (TypeString "indented_string") n = StringIndented (text n)
 readNode' (TypeString unknown) n = Unknown unknown (text n)
@@ -241,6 +244,7 @@ expr2Doc :: Int -> Expr -> Doc
 expr2Doc i (Comment str) = DText str
 expr2Doc i (Identifier str) = DText str
 expr2Doc i (Spath str) = DText str
+expr2Doc i (Path str) = DText str
 expr2Doc i (AttrPath str) = DText str
 expr2Doc i (StringValue str) = DText str
 expr2Doc i (StringIndented str) = DText str
