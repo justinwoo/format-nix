@@ -1,3 +1,4 @@
 node_modules
-.psc-package
+.psc-package*
 output
+result
