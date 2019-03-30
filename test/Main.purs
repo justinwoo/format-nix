@@ -36,7 +36,7 @@ main = launchAff_ do
     , "test/inherits.nix"
     , "test/fetch-github.nix"
     ]
-  let output = Array.intercalate "\n\n" results <> "\n"
+  let output = Array.intercalate "\n\n" results
   writeTextFile UTF8 "test/output.txt" output
   if String.contains (String.Pattern "Unknown") output
     then throwError $ error "contained Unknowns"

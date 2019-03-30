@@ -249,7 +249,17 @@ fits w (PText s x) = fits (w - String.length s) x
 fits w (PLine i x) = true
 
 pretty :: Int -> Doc -> String
-pretty w x = layout (best w 0 x)
+pretty w x = postProcess $ layout (best w 0 x) <> "\n"
+
+postProcess :: String -> String
+postProcess s
+  = String.joinWith "\n"
+  $ map trimRight
+  $ String.split (String.Pattern "\n") s
+
+trimRight :: String -> String
+trimRight s = s'.trimRight unit
+  where s' = unsafeCoerce s :: { trimRight :: Unit -> String }
 
 expr2Doc :: Expr -> Doc
 expr2Doc (Comment str) = DText str
@@ -275,7 +285,7 @@ expr2Doc (AttrSet exprs) = if Array.null exprs
   else do
     let left = DText "{"
     let right = DLine <> DText "}"
-    let inners = dlines $ expr2Doc <$> exprs
+    let inners = dlines2 $ expr2Doc <$> exprs
     left <> DNest 1 inners <> right
 expr2Doc (RecAttrSet exprs) = DText "rec " <> expr2Doc (AttrSet exprs)
 expr2Doc (SetFunction input output) =
@@ -290,7 +300,7 @@ expr2Doc (Function input output) = input_ <> DText ": " <> output_
 expr2Doc (Let binds expr) = let_ <> binds' <> in_ <> expr'
   where
     let_ = DText "let"
-    in_ = DLine <> DText "in "
+    in_ = DLine <> DLine <> DText "in "
     binds' = DNest 1 $ expr2Doc binds
     expr' = expr2Doc expr
 expr2Doc (If cond first second) = if_ <> then_ <> else_
@@ -299,7 +309,7 @@ expr2Doc (If cond first second) = if_ <> then_ <> else_
     then_ = DNest 1 $ DLine <> (DText "then ") <> expr2Doc first
     else_ = DNest 1 $ DLine <> (DText "else ") <> expr2Doc second
 expr2Doc (Quantity expr) = DText "(" <> expr2Doc expr <> DText ")"
-expr2Doc (Binds exprs) = dlines $ expr2Doc <$> exprs
+expr2Doc (Binds exprs) = dlines2 $ expr2Doc <$> exprs
 expr2Doc (Bind name value) =
   expr2Doc name <> DText " = " <> expr2Doc value <> DText ";"
 expr2Doc (Inherit exprs) = DText "inherit" <> inner <> DText ";"
@@ -316,6 +326,9 @@ dwords xs = foldMap (\x -> DText " " <> x) xs
 
 dlines :: forall f. Foldable f => f Doc -> Doc
 dlines xs = foldMap (\x -> DLine <> x) xs
+
+dlines2 :: forall f. Foldable f => f Doc -> Doc
+dlines2 xs = DLine <> intercalate (DLine <> DLine) xs
 
 printExpr :: Expr -> String
 printExpr = pretty 80 <<< expr2Doc
