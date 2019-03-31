@@ -3475,7 +3475,7 @@ var PS = {};
       if (v instanceof PLine) {
           return "\x0a" + (indent(v.value0) + layout(v.value1));
       };
-      throw new Error("Failed pattern match at FormatNix (line 227, column 1 - line 227, column 26): " + [ v.constructor.name ]);
+      throw new Error("Failed pattern match at FormatNix (line 231, column 1 - line 231, column 26): " + [ v.constructor.name ]);
   };
   var fits = function ($copy_w) {
       return function ($copy_v) {
@@ -3500,7 +3500,7 @@ var PS = {};
                   $tco_done = true;
                   return true;
               };
-              throw new Error("Failed pattern match at FormatNix (line 252, column 1 - line 252, column 32): " + [ w.constructor.name, v.constructor.name ]);
+              throw new Error("Failed pattern match at FormatNix (line 256, column 1 - line 256, column 32): " + [ w.constructor.name, v.constructor.name ]);
           };
           while (!$tco_done) {
               $tco_result = $tco_loop($tco_var_w, $copy_v);
@@ -3565,90 +3565,97 @@ var PS = {};
           return dlines(Data_Foldable.foldableArray)(Data_Functor.map(Data_Functor.functorArray)(expr2Doc)(v.value0));
       };
       if (v instanceof List) {
-          var right = Data_Semigroup.append(sgDoc)(DLine.value)(new DText("]"));
+          var right = new DText("]");
           var left = new DText("[");
           var inners = Data_Functor.map(Data_Functor.functorArray)(expr2Doc)(v.value0);
-          return Data_Semigroup.append(sgDoc)(left)(Data_Semigroup.append(sgDoc)(new DNest(1, dlines(Data_Foldable.foldableArray)(inners)))(right));
+          var oneLine = Data_Semigroup.append(sgDoc)(dwords(Data_Foldable.foldableArray)(inners))(new DText(" "));
+          var asLines = Data_Semigroup.append(sgDoc)(new DNest(1, dlines(Data_Foldable.foldableArray)(inners)))(DLine.value);
+          var choices = new DAlt(oneLine, asLines);
+          return Data_Semigroup.append(sgDoc)(left)(Data_Semigroup.append(sgDoc)(choices)(right));
+      };
+      var v1 = function (v2) {
+          if (v instanceof AttrSet) {
+              var $252 = Data_Array["null"](v.value0);
+              if ($252) {
+                  return new DText("{}");
+              };
+              var left = new DText("{");
+              var right = Data_Semigroup.append(sgDoc)(DLine.value)(new DText("}"));
+              var inners = dlines2(Data_Foldable.foldableArray)(Data_Functor.map(Data_Functor.functorArray)(expr2Doc)(v.value0));
+              return Data_Semigroup.append(sgDoc)(left)(Data_Semigroup.append(sgDoc)(new DNest(1, inners))(right));
+          };
+          if (v instanceof RecAttrSet) {
+              return Data_Semigroup.append(sgDoc)(new DText("rec "))(expr2Doc(new AttrSet(v.value0)));
+          };
+          if (v instanceof SetFunction) {
+              var output_ = expr2Doc(v.value1);
+              var input_ = expr2Doc(v.value0);
+              return Data_Semigroup.append(sgDoc)(new DText("{"))(Data_Semigroup.append(sgDoc)(input_)(Data_Semigroup.append(sgDoc)(new DText(" }:"))(Data_Semigroup.append(sgDoc)(DLine.value)(Data_Semigroup.append(sgDoc)(DLine.value)(output_)))));
+          };
+          if (v instanceof $$Function) {
+              var output_ = expr2Doc(v.value1);
+              var input_ = expr2Doc(v.value0);
+              return Data_Semigroup.append(sgDoc)(input_)(Data_Semigroup.append(sgDoc)(new DText(": "))(output_));
+          };
+          if (v instanceof Let) {
+              var let_ = new DText("let");
+              var in_ = Data_Semigroup.append(sgDoc)(DLine.value)(Data_Semigroup.append(sgDoc)(DLine.value)(new DText("in ")));
+              var expr$prime = expr2Doc(v.value1);
+              var binds$prime = DNest.create(1)(expr2Doc(v.value0));
+              return Data_Semigroup.append(sgDoc)(let_)(Data_Semigroup.append(sgDoc)(binds$prime)(Data_Semigroup.append(sgDoc)(in_)(expr$prime)));
+          };
+          if (v instanceof If) {
+              var then_ = DNest.create(1)(Data_Semigroup.append(sgDoc)(DLine.value)(Data_Semigroup.append(sgDoc)(new DText("then "))(expr2Doc(v.value1))));
+              var if_ = Data_Semigroup.append(sgDoc)(new DText("if "))(expr2Doc(v.value0));
+              var else_ = DNest.create(1)(Data_Semigroup.append(sgDoc)(DLine.value)(Data_Semigroup.append(sgDoc)(new DText("else "))(expr2Doc(v.value2))));
+              return Data_Semigroup.append(sgDoc)(if_)(Data_Semigroup.append(sgDoc)(then_)(else_));
+          };
+          if (v instanceof Quantity) {
+              return Data_Semigroup.append(sgDoc)(new DText("("))(Data_Semigroup.append(sgDoc)(expr2Doc(v.value0))(new DText(")")));
+          };
+          if (v instanceof Binds) {
+              return dlines2(Data_Foldable.foldableArray)(Data_Functor.map(Data_Functor.functorArray)(expr2Doc)(v.value0));
+          };
+          if (v instanceof Bind) {
+              return Data_Semigroup.append(sgDoc)(expr2Doc(v.value0))(Data_Semigroup.append(sgDoc)(new DText(" = "))(Data_Semigroup.append(sgDoc)(expr2Doc(v.value1))(new DText(";"))));
+          };
+          if (v instanceof Inherit) {
+              var inner = dwords(Data_Foldable.foldableArray)(Data_Functor.map(Data_Functor.functorArray)(expr2Doc)(v.value0));
+              return Data_Semigroup.append(sgDoc)(new DText("inherit"))(Data_Semigroup.append(sgDoc)(inner)(new DText(";")));
+          };
+          if (v instanceof With) {
+              return Data_Semigroup.append(sgDoc)(new DText("with "))(Data_Semigroup.append(sgDoc)(expr2Doc(v.value0))(Data_Semigroup.append(sgDoc)(new DText("; "))(expr2Doc(v.value1))));
+          };
+          if (v instanceof App) {
+              return Data_Semigroup.append(sgDoc)(expr2Doc(v.value0))(Data_Semigroup.append(sgDoc)(new DText(" "))(expr2Doc(v.value1)));
+          };
+          if (v instanceof Formals) {
+              return dwords(Data_Foldable.foldableArray)(Data_Functor.map(Data_Functor.functorArray)(expr2Doc)(v.value0));
+          };
+          if (v instanceof Formal && v.value1 instanceof Data_Maybe.Nothing) {
+              return expr2Doc(v.value0);
+          };
+          if (v instanceof Formal && v.value1 instanceof Data_Maybe.Just) {
+              return Data_Semigroup.append(sgDoc)(expr2Doc(v.value0))(Data_Semigroup.append(sgDoc)(new DText(" ? "))(expr2Doc(v.value1.value0)));
+          };
+          if (v instanceof Select) {
+              return Data_Semigroup.append(sgDoc)(expr2Doc(v.value0))(Data_Semigroup.append(sgDoc)(new DText("."))(expr2Doc(v.value1)));
+          };
+          throw new Error("Failed pattern match at FormatNix (line 275, column 1 - line 275, column 24): " + [ v.constructor.name ]);
       };
       if (v instanceof Attrs) {
-          return Data_Foldable.intercalate(Data_Foldable.foldableArray)(mDoc)(new DText(" "))(Data_Functor.map(Data_Functor.functorArray)(expr2Doc)(v.value0));
+          var $282 = Data_Functor.map(Data_Functor.functorArray)(expr2Doc)(v.value0);
+          return new DAlt(Data_Foldable.intercalate(Data_Foldable.foldableArray)(mDoc)(new DText(" "))($282), new DNest(1, dlines(Data_Foldable.foldableArray)($282)));
       };
-      if (v instanceof AttrSet) {
-          var $250 = Data_Array["null"](v.value0);
-          if ($250) {
-              return new DText("{}");
-          };
-          var left = new DText("{");
-          var right = Data_Semigroup.append(sgDoc)(DLine.value)(new DText("}"));
-          var inners = dlines2(Data_Foldable.foldableArray)(Data_Functor.map(Data_Functor.functorArray)(expr2Doc)(v.value0));
-          return Data_Semigroup.append(sgDoc)(left)(Data_Semigroup.append(sgDoc)(new DNest(1, inners))(right));
-      };
-      if (v instanceof RecAttrSet) {
-          return Data_Semigroup.append(sgDoc)(new DText("rec "))(expr2Doc(new AttrSet(v.value0)));
-      };
-      if (v instanceof SetFunction) {
-          var output_ = expr2Doc(v.value1);
-          var input_ = expr2Doc(v.value0);
-          return Data_Semigroup.append(sgDoc)(new DText("{"))(Data_Semigroup.append(sgDoc)(input_)(Data_Semigroup.append(sgDoc)(new DText(" }:"))(Data_Semigroup.append(sgDoc)(DLine.value)(Data_Semigroup.append(sgDoc)(DLine.value)(output_)))));
-      };
-      if (v instanceof $$Function) {
-          var output_ = expr2Doc(v.value1);
-          var input_ = expr2Doc(v.value0);
-          return Data_Semigroup.append(sgDoc)(input_)(Data_Semigroup.append(sgDoc)(new DText(": "))(output_));
-      };
-      if (v instanceof Let) {
-          var let_ = new DText("let");
-          var in_ = Data_Semigroup.append(sgDoc)(DLine.value)(Data_Semigroup.append(sgDoc)(DLine.value)(new DText("in ")));
-          var expr$prime = expr2Doc(v.value1);
-          var binds$prime = DNest.create(1)(expr2Doc(v.value0));
-          return Data_Semigroup.append(sgDoc)(let_)(Data_Semigroup.append(sgDoc)(binds$prime)(Data_Semigroup.append(sgDoc)(in_)(expr$prime)));
-      };
-      if (v instanceof If) {
-          var then_ = DNest.create(1)(Data_Semigroup.append(sgDoc)(DLine.value)(Data_Semigroup.append(sgDoc)(new DText("then "))(expr2Doc(v.value1))));
-          var if_ = Data_Semigroup.append(sgDoc)(new DText("if "))(expr2Doc(v.value0));
-          var else_ = DNest.create(1)(Data_Semigroup.append(sgDoc)(DLine.value)(Data_Semigroup.append(sgDoc)(new DText("else "))(expr2Doc(v.value2))));
-          return Data_Semigroup.append(sgDoc)(if_)(Data_Semigroup.append(sgDoc)(then_)(else_));
-      };
-      if (v instanceof Quantity) {
-          return Data_Semigroup.append(sgDoc)(new DText("("))(Data_Semigroup.append(sgDoc)(expr2Doc(v.value0))(new DText(")")));
-      };
-      if (v instanceof Binds) {
-          return dlines2(Data_Foldable.foldableArray)(Data_Functor.map(Data_Functor.functorArray)(expr2Doc)(v.value0));
-      };
-      if (v instanceof Bind) {
-          return Data_Semigroup.append(sgDoc)(expr2Doc(v.value0))(Data_Semigroup.append(sgDoc)(new DText(" = "))(Data_Semigroup.append(sgDoc)(expr2Doc(v.value1))(new DText(";"))));
-      };
-      if (v instanceof Inherit) {
-          var inner = dwords(Data_Foldable.foldableArray)(Data_Functor.map(Data_Functor.functorArray)(expr2Doc)(v.value0));
-          return Data_Semigroup.append(sgDoc)(new DText("inherit"))(Data_Semigroup.append(sgDoc)(inner)(new DText(";")));
-      };
-      if (v instanceof With) {
-          return Data_Semigroup.append(sgDoc)(new DText("with "))(Data_Semigroup.append(sgDoc)(expr2Doc(v.value0))(Data_Semigroup.append(sgDoc)(new DText("; "))(expr2Doc(v.value1))));
-      };
-      if (v instanceof App) {
-          return Data_Semigroup.append(sgDoc)(expr2Doc(v.value0))(Data_Semigroup.append(sgDoc)(new DText(" "))(expr2Doc(v.value1)));
-      };
-      if (v instanceof Formals) {
-          return dwords(Data_Foldable.foldableArray)(Data_Functor.map(Data_Functor.functorArray)(expr2Doc)(v.value0));
-      };
-      if (v instanceof Formal && v.value1 instanceof Data_Maybe.Nothing) {
-          return expr2Doc(v.value0);
-      };
-      if (v instanceof Formal && v.value1 instanceof Data_Maybe.Just) {
-          return Data_Semigroup.append(sgDoc)(expr2Doc(v.value0))(Data_Semigroup.append(sgDoc)(new DText(" ? "))(expr2Doc(v.value1.value0)));
-      };
-      if (v instanceof Select) {
-          return Data_Semigroup.append(sgDoc)(expr2Doc(v.value0))(Data_Semigroup.append(sgDoc)(new DText("."))(expr2Doc(v.value1)));
-      };
-      throw new Error("Failed pattern match at FormatNix (line 271, column 1 - line 271, column 24): " + [ v.constructor.name ]);
+      return v1(true);
   };
   var children = function (tn) {
       return tn.children;
   };
 
   // | Filter for named children
-  var namedChildren = function ($426) {
-      return Data_Array.filter(isNamed)(children($426));
+  var namedChildren = function ($431) {
+      return Data_Array.filter(isNamed)(children($431));
   };
   var readNode$prime = function (v) {
       return function (n) {
@@ -3741,109 +3748,109 @@ var PS = {};
                                                       return new Unknown(v, text(n));
                                                   };
                                                   if (v === "binary") {
-                                                      var $305 = children(n);
-                                                      var $306 = Data_List.fromFoldable(Data_Foldable.foldableArray)($305);
-                                                      if ($306 instanceof Data_List_Types.Cons && ($306.value1 instanceof Data_List_Types.Cons && ($306.value1.value1 instanceof Data_List_Types.Cons && $306.value1.value1.value1 instanceof Data_List_Types.Nil))) {
-                                                          return new Binary(readNode($306.value0), text($306.value1.value0), readNode($306.value1.value1.value0));
+                                                      var $310 = children(n);
+                                                      var $311 = Data_List.fromFoldable(Data_Foldable.foldableArray)($310);
+                                                      if ($311 instanceof Data_List_Types.Cons && ($311.value1 instanceof Data_List_Types.Cons && ($311.value1.value1 instanceof Data_List_Types.Cons && $311.value1.value1.value1 instanceof Data_List_Types.Nil))) {
+                                                          return new Binary(readNode($311.value0), text($311.value1.value0), readNode($311.value1.value1.value0));
                                                       };
                                                       return v21(true);
                                                   };
                                                   return v21(true);
                                               };
                                               if (v === "unary") {
-                                                  var $315 = children(n);
-                                                  var $316 = Data_List.fromFoldable(Data_Foldable.foldableArray)($315);
-                                                  if ($316 instanceof Data_List_Types.Cons && ($316.value1 instanceof Data_List_Types.Cons && $316.value1.value1 instanceof Data_List_Types.Nil)) {
-                                                      return new Unary(text($316.value0), readNode($316.value1.value0));
+                                                  var $320 = children(n);
+                                                  var $321 = Data_List.fromFoldable(Data_Foldable.foldableArray)($320);
+                                                  if ($321 instanceof Data_List_Types.Cons && ($321.value1 instanceof Data_List_Types.Cons && $321.value1.value1 instanceof Data_List_Types.Nil)) {
+                                                      return new Unary(text($321.value0), readNode($321.value1.value0));
                                                   };
                                                   return v19(true);
                                               };
                                               return v19(true);
                                           };
                                           if (v === "select") {
-                                              var $323 = Data_List.fromFoldable(Data_Foldable.foldableArray)(Data_Functor.map(Data_Functor.functorArray)(readNode)(namedChildren(n)));
-                                              if ($323 instanceof Data_List_Types.Cons && ($323.value1 instanceof Data_List_Types.Cons && $323.value1.value1 instanceof Data_List_Types.Nil)) {
-                                                  return new Select($323.value0, $323.value1.value0);
+                                              var $328 = Data_List.fromFoldable(Data_Foldable.foldableArray)(Data_Functor.map(Data_Functor.functorArray)(readNode)(namedChildren(n)));
+                                              if ($328 instanceof Data_List_Types.Cons && ($328.value1 instanceof Data_List_Types.Cons && $328.value1.value1 instanceof Data_List_Types.Nil)) {
+                                                  return new Select($328.value0, $328.value1.value0);
                                               };
                                               return v17(true);
                                           };
                                           return v17(true);
                                       };
                                       if (v === "with") {
-                                          var $330 = namedChildren(n);
-                                          var $331 = Data_List.fromFoldable(Data_Foldable.foldableArray)(Data_Functor.map(Data_Functor.functorArray)(readNode)(namedChildren(n)));
-                                          if ($331 instanceof Data_List_Types.Cons && ($331.value1 instanceof Data_List_Types.Cons && $331.value1.value1 instanceof Data_List_Types.Nil)) {
-                                              return new With($331.value0, $331.value1.value0);
+                                          var $335 = namedChildren(n);
+                                          var $336 = Data_List.fromFoldable(Data_Foldable.foldableArray)(Data_Functor.map(Data_Functor.functorArray)(readNode)(namedChildren(n)));
+                                          if ($336 instanceof Data_List_Types.Cons && ($336.value1 instanceof Data_List_Types.Cons && $336.value1.value1 instanceof Data_List_Types.Nil)) {
+                                              return new With($336.value0, $336.value1.value0);
                                           };
                                           return v15(true);
                                       };
                                       return v15(true);
                                   };
                                   if (v === "bind") {
-                                      var $338 = namedChildren(n);
-                                      var $339 = Data_List.fromFoldable(Data_Foldable.foldableArray)(Data_Functor.map(Data_Functor.functorArray)(readNode)(namedChildren(n)));
-                                      if ($339 instanceof Data_List_Types.Cons && ($339.value1 instanceof Data_List_Types.Cons && $339.value1.value1 instanceof Data_List_Types.Nil)) {
-                                          return new Bind($339.value0, $339.value1.value0);
+                                      var $343 = namedChildren(n);
+                                      var $344 = Data_List.fromFoldable(Data_Foldable.foldableArray)(Data_Functor.map(Data_Functor.functorArray)(readNode)(namedChildren(n)));
+                                      if ($344 instanceof Data_List_Types.Cons && ($344.value1 instanceof Data_List_Types.Cons && $344.value1.value1 instanceof Data_List_Types.Nil)) {
+                                          return new Bind($344.value0, $344.value1.value0);
                                       };
                                       return v13(true);
                                   };
                                   return v13(true);
                               };
                               if (v === "quantity") {
-                                  var $346 = Data_List.fromFoldable(Data_Foldable.foldableArray)(Data_Functor.map(Data_Functor.functorArray)(readNode)(namedChildren(n)));
-                                  if ($346 instanceof Data_List_Types.Cons && $346.value1 instanceof Data_List_Types.Nil) {
-                                      return new Quantity($346.value0);
+                                  var $351 = Data_List.fromFoldable(Data_Foldable.foldableArray)(Data_Functor.map(Data_Functor.functorArray)(readNode)(namedChildren(n)));
+                                  if ($351 instanceof Data_List_Types.Cons && $351.value1 instanceof Data_List_Types.Nil) {
+                                      return new Quantity($351.value0);
                                   };
                                   return v11(true);
                               };
                               return v11(true);
                           };
                           if (v === "let") {
-                              var $351 = Data_List.fromFoldable(Data_Foldable.foldableArray)(namedChildren(n));
-                              if ($351 instanceof Data_List_Types.Cons && ($351.value1 instanceof Data_List_Types.Cons && $351.value1.value1 instanceof Data_List_Types.Nil)) {
-                                  return new Let(readNode($351.value0), readNode($351.value1.value0));
+                              var $356 = Data_List.fromFoldable(Data_Foldable.foldableArray)(namedChildren(n));
+                              if ($356 instanceof Data_List_Types.Cons && ($356.value1 instanceof Data_List_Types.Cons && $356.value1.value1 instanceof Data_List_Types.Nil)) {
+                                  return new Let(readNode($356.value0), readNode($356.value1.value0));
                               };
                               return v9(true);
                           };
                           return v9(true);
                       };
                       if (v === "if") {
-                          var $358 = Data_List.fromFoldable(Data_Foldable.foldableArray)(namedChildren(n));
-                          if ($358 instanceof Data_List_Types.Cons && ($358.value1 instanceof Data_List_Types.Cons && ($358.value1.value1 instanceof Data_List_Types.Cons && $358.value1.value1.value1 instanceof Data_List_Types.Nil))) {
-                              return new If(readNode($358.value0), readNode($358.value1.value0), readNode($358.value1.value1.value0));
+                          var $363 = Data_List.fromFoldable(Data_Foldable.foldableArray)(namedChildren(n));
+                          if ($363 instanceof Data_List_Types.Cons && ($363.value1 instanceof Data_List_Types.Cons && ($363.value1.value1 instanceof Data_List_Types.Cons && $363.value1.value1.value1 instanceof Data_List_Types.Nil))) {
+                              return new If(readNode($363.value0), readNode($363.value1.value0), readNode($363.value1.value1.value0));
                           };
                           return v7(true);
                       };
                       return v7(true);
                   };
                   if (v === "app") {
-                      var $367 = Data_List.fromFoldable(Data_Foldable.foldableArray)(Data_Functor.map(Data_Functor.functorArray)(readNode)(namedChildren(n)));
-                      if ($367 instanceof Data_List_Types.Cons && ($367.value1 instanceof Data_List_Types.Cons && $367.value1.value1 instanceof Data_List_Types.Nil)) {
-                          return new App($367.value0, $367.value1.value0);
+                      var $372 = Data_List.fromFoldable(Data_Foldable.foldableArray)(Data_Functor.map(Data_Functor.functorArray)(readNode)(namedChildren(n)));
+                      if ($372 instanceof Data_List_Types.Cons && ($372.value1 instanceof Data_List_Types.Cons && $372.value1.value1 instanceof Data_List_Types.Nil)) {
+                          return new App($372.value0, $372.value1.value0);
                       };
                       return v5(true);
                   };
                   return v5(true);
               };
               if (v === "formal") {
-                  var $374 = Data_List.fromFoldable(Data_Foldable.foldableArray)(Data_Functor.map(Data_Functor.functorArray)(readNode)(namedChildren(n)));
-                  if ($374 instanceof Data_List_Types.Cons && $374.value1 instanceof Data_List_Types.Nil) {
-                      return new Formal($374.value0, Data_Maybe.Nothing.value);
+                  var $379 = Data_List.fromFoldable(Data_Foldable.foldableArray)(Data_Functor.map(Data_Functor.functorArray)(readNode)(namedChildren(n)));
+                  if ($379 instanceof Data_List_Types.Cons && $379.value1 instanceof Data_List_Types.Nil) {
+                      return new Formal($379.value0, Data_Maybe.Nothing.value);
                   };
-                  if ($374 instanceof Data_List_Types.Cons && ($374.value1 instanceof Data_List_Types.Cons && $374.value1.value1 instanceof Data_List_Types.Nil)) {
-                      return new Formal($374.value0, new Data_Maybe.Just($374.value1.value0));
+                  if ($379 instanceof Data_List_Types.Cons && ($379.value1 instanceof Data_List_Types.Cons && $379.value1.value1 instanceof Data_List_Types.Nil)) {
+                      return new Formal($379.value0, new Data_Maybe.Just($379.value1.value0));
                   };
                   return new Unknown("formal varigation", text(n));
               };
               return v3(true);
           };
           if (v === "function") {
-              var $384 = Data_List.fromFoldable(Data_Foldable.foldableArray)(Data_Functor.map(Data_Functor.functorArray)(readNode)(namedChildren(n)));
-              if ($384 instanceof Data_List_Types.Cons && ($384.value1 instanceof Data_List_Types.Cons && $384.value1.value1 instanceof Data_List_Types.Nil)) {
-                  if ($384.value0 instanceof Formals) {
-                      return new SetFunction($384.value0, $384.value1.value0);
+              var $389 = Data_List.fromFoldable(Data_Foldable.foldableArray)(Data_Functor.map(Data_Functor.functorArray)(readNode)(namedChildren(n)));
+              if ($389 instanceof Data_List_Types.Cons && ($389.value1 instanceof Data_List_Types.Cons && $389.value1.value1 instanceof Data_List_Types.Nil)) {
+                  if ($389.value0 instanceof Formals) {
+                      return new SetFunction($389.value0, $389.value1.value0);
                   };
-                  return new $$Function($384.value0, $384.value1.value0);
+                  return new $$Function($389.value0, $389.value1.value0);
               };
               return v1(true);
           };
@@ -3862,8 +3869,8 @@ var PS = {};
       return function (k) {
           return function (x) {
               return function (y) {
-                  var $391 = fits(w - k | 0)(x);
-                  if ($391) {
+                  var $396 = fits(w - k | 0)(x);
+                  if ($396) {
                       return x;
                   };
                   return y;
@@ -3895,7 +3902,7 @@ var PS = {};
               if (v instanceof Data_List_Types.Cons && v.value0.value1 instanceof DAlt) {
                   return better(w)(k)(be(w)(k)(new Data_List_Types.Cons(new Data_Tuple.Tuple(v.value0.value0, v.value0.value1.value0), v.value1)))(be(w)(k)(new Data_List_Types.Cons(new Data_Tuple.Tuple(v.value0.value0, v.value0.value1.value1), v.value1)));
               };
-              throw new Error("Failed pattern match at FormatNix (line 240, column 1 - line 240, column 50): " + [ w.constructor.name, k.constructor.name, v.constructor.name ]);
+              throw new Error("Failed pattern match at FormatNix (line 244, column 1 - line 244, column 50): " + [ w.constructor.name, k.constructor.name, v.constructor.name ]);
           };
       };
   };
@@ -3911,8 +3918,8 @@ var PS = {};
           return postProcess(layout(best(w)(0)(x)) + "\x0a");
       };
   };
-  var printExpr = function ($427) {
-      return pretty(80)(expr2Doc($427));
+  var printExpr = function ($432) {
+      return pretty(80)(expr2Doc($432));
   };
   exports["Expression"] = Expression;
   exports["Comment"] = Comment;
