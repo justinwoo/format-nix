@@ -30,9 +30,7 @@ in pkgs.stdenv.mkDerivation rec {
     };
 
 
-  buildInputs = [ pkgs.zlib
-                  pkgs.gmp
-                  pkgs.ncurses5];
+  buildInputs = [ pkgs.zlib pkgs.gmp pkgs.ncurses5];
   libPath = pkgs.lib.makeLibraryPath buildInputs;
   dontStrip = true;
 

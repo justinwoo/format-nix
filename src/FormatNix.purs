@@ -117,6 +117,10 @@ rootNode :: Tree -> Node
 rootNode tree = tree'.rootNode
   where tree' = unsafeCoerce tree :: { rootNode :: Node }
 
+nodeToString :: Node -> String
+nodeToString node = node'.toString unit
+  where node' = unsafeCoerce node :: { toString :: Unit -> String }
+
 readNode :: Node -> Expr
 readNode n = readNode' (type_ n) n
 
@@ -281,12 +285,18 @@ expr2Doc (Unknown tag str) = DText $ "Unknown " <> tag <> " " <> str
 expr2Doc (Unary sign expr) = DText sign <> expr2Doc expr
 expr2Doc (Binary x sign y) = expr2Doc x <> DText (" " <> sign <> " ") <> expr2Doc y
 expr2Doc (Expression exprs) = dlines $ expr2Doc <$> exprs
-expr2Doc (List exprs) = left <> (DNest 1 (dlines inners)) <> right
+expr2Doc (List exprs) = left <> choices <> right
   where
     inners = expr2Doc <$> exprs
     left = DText "["
-    right = DLine <> DText "]"
-expr2Doc (Attrs exprs) = intercalate (DText " ") $ expr2Doc <$> exprs
+    right = DText "]"
+    choices = DAlt oneLine asLines
+    oneLine = dwords inners <> DText " "
+    asLines = (DNest 1 (dlines inners)) <> DLine
+expr2Doc (Attrs exprs)
+  | docs <- expr2Doc <$> exprs = DAlt
+  (intercalate (DText " ") docs)
+  (DNest 1 (dlines docs))
 expr2Doc (AttrSet exprs) = if Array.null exprs
   then DText "{}"
   else do

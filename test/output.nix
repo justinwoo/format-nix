@@ -1,3 +1,4 @@
+(expression (comment) (function (formals (formal (identifier) (app (app (identifier) (spath)) (attrset)))) (let (binds (bind (attrpath (identifier)) (select (identifier) (attrpath (identifier) (identifier) (identifier) (identifier)))) (bind (attrpath (identifier)) (function (identifier) (if (select (identifier) (attrpath (identifier) (identifier))) (string) (indented_string (interpolation (identifier)) (interpolation (identifier))))))) (app (select (identifier) (attrpath (identifier) (identifier))) (rec_attrset (bind (attrpath (identifier)) (string)) (bind (attrpath (identifier)) (string)) (bind (attrpath (identifier)) (if (select (identifier) (attrpath (identifier) (identifier))) (app (select (identifier) (attrpath (identifier))) (attrset (bind (attrpath (identifier)) (string)) (bind (attrpath (identifier)) (string)))) (app (select (identifier) (attrpath (identifier))) (attrset (bind (attrpath (identifier)) (string)) (bind (attrpath (identifier)) (string)))))) (bind (attrpath (identifier)) (list (select (identifier) (attrpath (identifier))) (select (identifier) (attrpath (identifier))) (select (identifier) (attrpath (identifier))))) (bind (attrpath (identifier)) (app (select (identifier) (attrpath (identifier) (identifier))) (identifier))) (bind (attrpath (identifier)) (identifier)) (bind (attrpath (identifier)) (indented_string (interpolation (app (identifier) (identifier))))))))))
 # https://github.com/justinwoo/easy-purescript-nix/blob/7255d015b80d28c7c6db655dda215535cb2d4b41/purs.nix
 
 { pkgs ? import <nixpkgs> {} }:
@@ -30,11 +31,7 @@ in pkgs.stdenv.mkDerivation rec {
       sha256 = "1fad862a2sv4njxbbcfzibbi585m6is3ywb94nmjl8ax254baj3i";
     };
 
-  buildInputs = [
-    pkgs.zlib
-    pkgs.gmp
-    pkgs.ncurses5
-  ];
+  buildInputs = [ pkgs.zlib pkgs.gmp pkgs.ncurses5 ];
 
   libPath = pkgs.lib.makeLibraryPath buildInputs;
 
@@ -53,9 +50,11 @@ in pkgs.stdenv.mkDerivation rec {
 }
 
 
+(expression (app (app (identifier) (path)) (attrset)))
 import ./build.nix {}
 
 
+(expression (let (binds (bind (attrpath (identifier)) (integer)) (bind (attrpath (identifier)) (integer))) (binary (unary (identifier)) (identifier))))
 let
   a = 123;
 
@@ -64,13 +63,39 @@ let
 in -a + b
 
 
+(expression (attrset (inherit (quantity (identifier)) (attrs (identifier) (identifier) (identifier) (identifier))) (bind (attrpath (identifier)) (with (quantity (identifier)) (integer))) (inherit (quantity (identifier)) (attrs (identifier) (identifier) (identifier) (identifier) (identifier) (identifier) (identifier) (identifier) (identifier) (identifier) (identifier) (identifier) (identifier) (identifier) (identifier) (identifier) (identifier) (identifier) (identifier) (identifier) (identifier) (identifier)))))
 {
   inherit (x) a b c d;
 
   z = with (a); 1;
+
+  inherit (x)
+    apple
+    bpple
+    cpple
+    dpple
+    epple
+    fpple
+    gpple
+    hpple
+    ipple
+    jpple
+    kpple
+    lpple
+    mpple
+    npple
+    opple
+    ppple
+    qpple
+    rpple
+    spple
+    tpple
+    upple
+    vpple;
 }
 
 
+(expression (comment) (function (formals (formal (identifier) (app (app (identifier) (spath)) (attrset)))) (app (app (identifier) (quantity (app (select (identifier) (attrpath (identifier))) (attrset (bind (attrpath (identifier)) (string)) (bind (attrpath (identifier)) (string)) (bind (attrpath (identifier)) (string)) (bind (attrpath (identifier)) (string)))))) (attrset (inherit (attrs (identifier)))))))
 # https://github.com/justinwoo/easy-purescript-nix/blob/7255d015b80d28c7c6db655dda215535cb2d4b41/psc-package2nix.nix
 
 { pkgs ? import <nixpkgs> {} }:
@@ -85,4 +110,35 @@ import (pkgs.fetchFromGitHub {
   sha256 = "0g9fq4j472bcr1x5na6mzr3av95xhvdmnlns1ncvsl4kqa8ix2zr";
 }) {
   inherit pkgs;
+}
+
+
+(expression (attrset (bind (attrpath (identifier)) (list (string) (string) (string) (string) (string) (string) (string) (string) (string) (string) (string) (string) (string) (string) (string) (string) (string) (string) (string) (string) (string) (string))) (bind (attrpath (identifier)) (list (integer) (integer) (integer) (integer) (integer)))))
+{
+  a = [
+    "apple"
+    "bpple"
+    "cpple"
+    "dpple"
+    "epple"
+    "fpple"
+    "gpple"
+    "hpple"
+    "ipple"
+    "jpple"
+    "kpple"
+    "lpple"
+    "mpple"
+    "npple"
+    "opple"
+    "ppple"
+    "qpple"
+    "rpple"
+    "spple"
+    "tpple"
+    "upple"
+    "vpple"
+  ];
+
+  b = [ 1 2 3 4 5 ];
 }
