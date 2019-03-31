@@ -3295,6 +3295,18 @@ var PS = {};
       };
       return Inherit;
   })();
+  var With = (function () {
+      function With(value0, value1) {
+          this.value0 = value0;
+          this.value1 = value1;
+      };
+      With.create = function (value0) {
+          return function (value1) {
+              return new With(value0, value1);
+          };
+      };
+      return With;
+  })();
   var Attrs = (function () {
       function Attrs(value0) {
           this.value0 = value0;
@@ -3463,7 +3475,7 @@ var PS = {};
       if (v instanceof PLine) {
           return "\x0a" + (indent(v.value0) + layout(v.value1));
       };
-      throw new Error("Failed pattern match at FormatNix (line 220, column 1 - line 220, column 26): " + [ v.constructor.name ]);
+      throw new Error("Failed pattern match at FormatNix (line 227, column 1 - line 227, column 26): " + [ v.constructor.name ]);
   };
   var fits = function ($copy_w) {
       return function ($copy_v) {
@@ -3488,7 +3500,7 @@ var PS = {};
                   $tco_done = true;
                   return true;
               };
-              throw new Error("Failed pattern match at FormatNix (line 245, column 1 - line 245, column 32): " + [ w.constructor.name, v.constructor.name ]);
+              throw new Error("Failed pattern match at FormatNix (line 252, column 1 - line 252, column 32): " + [ w.constructor.name, v.constructor.name ]);
           };
           while (!$tco_done) {
               $tco_result = $tco_loop($tco_var_w, $copy_v);
@@ -3562,8 +3574,8 @@ var PS = {};
           return Data_Foldable.intercalate(Data_Foldable.foldableArray)(mDoc)(new DText(" "))(Data_Functor.map(Data_Functor.functorArray)(expr2Doc)(v.value0));
       };
       if (v instanceof AttrSet) {
-          var $240 = Data_Array["null"](v.value0);
-          if ($240) {
+          var $250 = Data_Array["null"](v.value0);
+          if ($250) {
               return new DText("{}");
           };
           var left = new DText("{");
@@ -3610,6 +3622,9 @@ var PS = {};
           var inner = dwords(Data_Foldable.foldableArray)(Data_Functor.map(Data_Functor.functorArray)(expr2Doc)(v.value0));
           return Data_Semigroup.append(sgDoc)(new DText("inherit"))(Data_Semigroup.append(sgDoc)(inner)(new DText(";")));
       };
+      if (v instanceof With) {
+          return Data_Semigroup.append(sgDoc)(new DText("with "))(Data_Semigroup.append(sgDoc)(expr2Doc(v.value0))(Data_Semigroup.append(sgDoc)(new DText("; "))(expr2Doc(v.value1))));
+      };
       if (v instanceof App) {
           return Data_Semigroup.append(sgDoc)(expr2Doc(v.value0))(Data_Semigroup.append(sgDoc)(new DText(" "))(expr2Doc(v.value1)));
       };
@@ -3625,15 +3640,15 @@ var PS = {};
       if (v instanceof Select) {
           return Data_Semigroup.append(sgDoc)(expr2Doc(v.value0))(Data_Semigroup.append(sgDoc)(new DText("."))(expr2Doc(v.value1)));
       };
-      throw new Error("Failed pattern match at FormatNix (line 264, column 1 - line 264, column 24): " + [ v.constructor.name ]);
+      throw new Error("Failed pattern match at FormatNix (line 271, column 1 - line 271, column 24): " + [ v.constructor.name ]);
   };
   var children = function (tn) {
       return tn.children;
   };
 
   // | Filter for named children
-  var namedChildren = function ($404) {
-      return Data_Array.filter(isNamed)(children($404));
+  var namedChildren = function ($426) {
+      return Data_Array.filter(isNamed)(children($426));
   };
   var readNode$prime = function (v) {
       return function (n) {
@@ -3687,134 +3702,148 @@ var PS = {};
                                           return Inherit.create(Data_Functor.map(Data_Functor.functorArray)(readNode)(namedChildren(n)));
                                       };
                                       var v15 = function (v16) {
-                                          if (v === "select" && Data_Boolean.otherwise) {
-                                              return new Unknown("Select variation", text(n));
+                                          if (v === "with" && Data_Boolean.otherwise) {
+                                              return new Unknown("With variation", text(n));
                                           };
                                           var v17 = function (v18) {
-                                              if (v === "unary" && Data_Boolean.otherwise) {
-                                                  return new Unknown("Unary variation", text(n));
+                                              if (v === "select" && Data_Boolean.otherwise) {
+                                                  return new Unknown("Select variation", text(n));
                                               };
                                               var v19 = function (v20) {
-                                                  if (v === "binary" && Data_Boolean.otherwise) {
-                                                      return new Unknown("Binary variation", text(n));
+                                                  if (v === "unary" && Data_Boolean.otherwise) {
+                                                      return new Unknown("Unary variation", text(n));
                                                   };
-                                                  if (v === "attrpath") {
-                                                      return new AttrPath(text(n));
+                                                  var v21 = function (v22) {
+                                                      if (v === "binary" && Data_Boolean.otherwise) {
+                                                          return new Unknown("Binary variation", text(n));
+                                                      };
+                                                      if (v === "attrpath") {
+                                                          return new AttrPath(text(n));
+                                                      };
+                                                      if (v === "identifier") {
+                                                          return new Identifier(text(n));
+                                                      };
+                                                      if (v === "spath") {
+                                                          return new Spath(text(n));
+                                                      };
+                                                      if (v === "path") {
+                                                          return new Path(text(n));
+                                                      };
+                                                      if (v === "string") {
+                                                          return new StringValue(text(n));
+                                                      };
+                                                      if (v === "integer") {
+                                                          return new Integer(text(n));
+                                                      };
+                                                      if (v === "indented_string") {
+                                                          return new StringIndented(text(n));
+                                                      };
+                                                      return new Unknown(v, text(n));
                                                   };
-                                                  if (v === "identifier") {
-                                                      return new Identifier(text(n));
+                                                  if (v === "binary") {
+                                                      var $305 = children(n);
+                                                      var $306 = Data_List.fromFoldable(Data_Foldable.foldableArray)($305);
+                                                      if ($306 instanceof Data_List_Types.Cons && ($306.value1 instanceof Data_List_Types.Cons && ($306.value1.value1 instanceof Data_List_Types.Cons && $306.value1.value1.value1 instanceof Data_List_Types.Nil))) {
+                                                          return new Binary(readNode($306.value0), text($306.value1.value0), readNode($306.value1.value1.value0));
+                                                      };
+                                                      return v21(true);
                                                   };
-                                                  if (v === "spath") {
-                                                      return new Spath(text(n));
-                                                  };
-                                                  if (v === "path") {
-                                                      return new Path(text(n));
-                                                  };
-                                                  if (v === "string") {
-                                                      return new StringValue(text(n));
-                                                  };
-                                                  if (v === "integer") {
-                                                      return new Integer(text(n));
-                                                  };
-                                                  if (v === "indented_string") {
-                                                      return new StringIndented(text(n));
-                                                  };
-                                                  return new Unknown(v, text(n));
+                                                  return v21(true);
                                               };
-                                              if (v === "binary") {
-                                                  var $291 = children(n);
-                                                  var $292 = Data_List.fromFoldable(Data_Foldable.foldableArray)($291);
-                                                  if ($292 instanceof Data_List_Types.Cons && ($292.value1 instanceof Data_List_Types.Cons && ($292.value1.value1 instanceof Data_List_Types.Cons && $292.value1.value1.value1 instanceof Data_List_Types.Nil))) {
-                                                      return new Binary(readNode($292.value0), text($292.value1.value0), readNode($292.value1.value1.value0));
+                                              if (v === "unary") {
+                                                  var $315 = children(n);
+                                                  var $316 = Data_List.fromFoldable(Data_Foldable.foldableArray)($315);
+                                                  if ($316 instanceof Data_List_Types.Cons && ($316.value1 instanceof Data_List_Types.Cons && $316.value1.value1 instanceof Data_List_Types.Nil)) {
+                                                      return new Unary(text($316.value0), readNode($316.value1.value0));
                                                   };
                                                   return v19(true);
                                               };
                                               return v19(true);
                                           };
-                                          if (v === "unary") {
-                                              var $301 = children(n);
-                                              var $302 = Data_List.fromFoldable(Data_Foldable.foldableArray)($301);
-                                              if ($302 instanceof Data_List_Types.Cons && ($302.value1 instanceof Data_List_Types.Cons && $302.value1.value1 instanceof Data_List_Types.Nil)) {
-                                                  return new Unary(text($302.value0), readNode($302.value1.value0));
+                                          if (v === "select") {
+                                              var $323 = Data_List.fromFoldable(Data_Foldable.foldableArray)(Data_Functor.map(Data_Functor.functorArray)(readNode)(namedChildren(n)));
+                                              if ($323 instanceof Data_List_Types.Cons && ($323.value1 instanceof Data_List_Types.Cons && $323.value1.value1 instanceof Data_List_Types.Nil)) {
+                                                  return new Select($323.value0, $323.value1.value0);
                                               };
                                               return v17(true);
                                           };
                                           return v17(true);
                                       };
-                                      if (v === "select") {
-                                          var $309 = Data_List.fromFoldable(Data_Foldable.foldableArray)(Data_Functor.map(Data_Functor.functorArray)(readNode)(namedChildren(n)));
-                                          if ($309 instanceof Data_List_Types.Cons && ($309.value1 instanceof Data_List_Types.Cons && $309.value1.value1 instanceof Data_List_Types.Nil)) {
-                                              return new Select($309.value0, $309.value1.value0);
+                                      if (v === "with") {
+                                          var $330 = namedChildren(n);
+                                          var $331 = Data_List.fromFoldable(Data_Foldable.foldableArray)(Data_Functor.map(Data_Functor.functorArray)(readNode)(namedChildren(n)));
+                                          if ($331 instanceof Data_List_Types.Cons && ($331.value1 instanceof Data_List_Types.Cons && $331.value1.value1 instanceof Data_List_Types.Nil)) {
+                                              return new With($331.value0, $331.value1.value0);
                                           };
                                           return v15(true);
                                       };
                                       return v15(true);
                                   };
                                   if (v === "bind") {
-                                      var $316 = namedChildren(n);
-                                      var $317 = Data_List.fromFoldable(Data_Foldable.foldableArray)(Data_Functor.map(Data_Functor.functorArray)(readNode)(namedChildren(n)));
-                                      if ($317 instanceof Data_List_Types.Cons && ($317.value1 instanceof Data_List_Types.Cons && $317.value1.value1 instanceof Data_List_Types.Nil)) {
-                                          return new Bind($317.value0, $317.value1.value0);
+                                      var $338 = namedChildren(n);
+                                      var $339 = Data_List.fromFoldable(Data_Foldable.foldableArray)(Data_Functor.map(Data_Functor.functorArray)(readNode)(namedChildren(n)));
+                                      if ($339 instanceof Data_List_Types.Cons && ($339.value1 instanceof Data_List_Types.Cons && $339.value1.value1 instanceof Data_List_Types.Nil)) {
+                                          return new Bind($339.value0, $339.value1.value0);
                                       };
                                       return v13(true);
                                   };
                                   return v13(true);
                               };
                               if (v === "quantity") {
-                                  var $324 = Data_List.fromFoldable(Data_Foldable.foldableArray)(Data_Functor.map(Data_Functor.functorArray)(readNode)(namedChildren(n)));
-                                  if ($324 instanceof Data_List_Types.Cons && $324.value1 instanceof Data_List_Types.Nil) {
-                                      return new Quantity($324.value0);
+                                  var $346 = Data_List.fromFoldable(Data_Foldable.foldableArray)(Data_Functor.map(Data_Functor.functorArray)(readNode)(namedChildren(n)));
+                                  if ($346 instanceof Data_List_Types.Cons && $346.value1 instanceof Data_List_Types.Nil) {
+                                      return new Quantity($346.value0);
                                   };
                                   return v11(true);
                               };
                               return v11(true);
                           };
                           if (v === "let") {
-                              var $329 = Data_List.fromFoldable(Data_Foldable.foldableArray)(namedChildren(n));
-                              if ($329 instanceof Data_List_Types.Cons && ($329.value1 instanceof Data_List_Types.Cons && $329.value1.value1 instanceof Data_List_Types.Nil)) {
-                                  return new Let(readNode($329.value0), readNode($329.value1.value0));
+                              var $351 = Data_List.fromFoldable(Data_Foldable.foldableArray)(namedChildren(n));
+                              if ($351 instanceof Data_List_Types.Cons && ($351.value1 instanceof Data_List_Types.Cons && $351.value1.value1 instanceof Data_List_Types.Nil)) {
+                                  return new Let(readNode($351.value0), readNode($351.value1.value0));
                               };
                               return v9(true);
                           };
                           return v9(true);
                       };
                       if (v === "if") {
-                          var $336 = Data_List.fromFoldable(Data_Foldable.foldableArray)(namedChildren(n));
-                          if ($336 instanceof Data_List_Types.Cons && ($336.value1 instanceof Data_List_Types.Cons && ($336.value1.value1 instanceof Data_List_Types.Cons && $336.value1.value1.value1 instanceof Data_List_Types.Nil))) {
-                              return new If(readNode($336.value0), readNode($336.value1.value0), readNode($336.value1.value1.value0));
+                          var $358 = Data_List.fromFoldable(Data_Foldable.foldableArray)(namedChildren(n));
+                          if ($358 instanceof Data_List_Types.Cons && ($358.value1 instanceof Data_List_Types.Cons && ($358.value1.value1 instanceof Data_List_Types.Cons && $358.value1.value1.value1 instanceof Data_List_Types.Nil))) {
+                              return new If(readNode($358.value0), readNode($358.value1.value0), readNode($358.value1.value1.value0));
                           };
                           return v7(true);
                       };
                       return v7(true);
                   };
                   if (v === "app") {
-                      var $345 = Data_List.fromFoldable(Data_Foldable.foldableArray)(Data_Functor.map(Data_Functor.functorArray)(readNode)(namedChildren(n)));
-                      if ($345 instanceof Data_List_Types.Cons && ($345.value1 instanceof Data_List_Types.Cons && $345.value1.value1 instanceof Data_List_Types.Nil)) {
-                          return new App($345.value0, $345.value1.value0);
+                      var $367 = Data_List.fromFoldable(Data_Foldable.foldableArray)(Data_Functor.map(Data_Functor.functorArray)(readNode)(namedChildren(n)));
+                      if ($367 instanceof Data_List_Types.Cons && ($367.value1 instanceof Data_List_Types.Cons && $367.value1.value1 instanceof Data_List_Types.Nil)) {
+                          return new App($367.value0, $367.value1.value0);
                       };
                       return v5(true);
                   };
                   return v5(true);
               };
               if (v === "formal") {
-                  var $352 = Data_List.fromFoldable(Data_Foldable.foldableArray)(Data_Functor.map(Data_Functor.functorArray)(readNode)(namedChildren(n)));
-                  if ($352 instanceof Data_List_Types.Cons && $352.value1 instanceof Data_List_Types.Nil) {
-                      return new Formal($352.value0, Data_Maybe.Nothing.value);
+                  var $374 = Data_List.fromFoldable(Data_Foldable.foldableArray)(Data_Functor.map(Data_Functor.functorArray)(readNode)(namedChildren(n)));
+                  if ($374 instanceof Data_List_Types.Cons && $374.value1 instanceof Data_List_Types.Nil) {
+                      return new Formal($374.value0, Data_Maybe.Nothing.value);
                   };
-                  if ($352 instanceof Data_List_Types.Cons && ($352.value1 instanceof Data_List_Types.Cons && $352.value1.value1 instanceof Data_List_Types.Nil)) {
-                      return new Formal($352.value0, new Data_Maybe.Just($352.value1.value0));
+                  if ($374 instanceof Data_List_Types.Cons && ($374.value1 instanceof Data_List_Types.Cons && $374.value1.value1 instanceof Data_List_Types.Nil)) {
+                      return new Formal($374.value0, new Data_Maybe.Just($374.value1.value0));
                   };
                   return new Unknown("formal varigation", text(n));
               };
               return v3(true);
           };
           if (v === "function") {
-              var $362 = Data_List.fromFoldable(Data_Foldable.foldableArray)(Data_Functor.map(Data_Functor.functorArray)(readNode)(namedChildren(n)));
-              if ($362 instanceof Data_List_Types.Cons && ($362.value1 instanceof Data_List_Types.Cons && $362.value1.value1 instanceof Data_List_Types.Nil)) {
-                  if ($362.value0 instanceof Formals) {
-                      return new SetFunction($362.value0, $362.value1.value0);
+              var $384 = Data_List.fromFoldable(Data_Foldable.foldableArray)(Data_Functor.map(Data_Functor.functorArray)(readNode)(namedChildren(n)));
+              if ($384 instanceof Data_List_Types.Cons && ($384.value1 instanceof Data_List_Types.Cons && $384.value1.value1 instanceof Data_List_Types.Nil)) {
+                  if ($384.value0 instanceof Formals) {
+                      return new SetFunction($384.value0, $384.value1.value0);
                   };
-                  return new $$Function($362.value0, $362.value1.value0);
+                  return new $$Function($384.value0, $384.value1.value0);
               };
               return v1(true);
           };
@@ -3833,8 +3862,8 @@ var PS = {};
       return function (k) {
           return function (x) {
               return function (y) {
-                  var $369 = fits(w - k | 0)(x);
-                  if ($369) {
+                  var $391 = fits(w - k | 0)(x);
+                  if ($391) {
                       return x;
                   };
                   return y;
@@ -3866,7 +3895,7 @@ var PS = {};
               if (v instanceof Data_List_Types.Cons && v.value0.value1 instanceof DAlt) {
                   return better(w)(k)(be(w)(k)(new Data_List_Types.Cons(new Data_Tuple.Tuple(v.value0.value0, v.value0.value1.value0), v.value1)))(be(w)(k)(new Data_List_Types.Cons(new Data_Tuple.Tuple(v.value0.value0, v.value0.value1.value1), v.value1)));
               };
-              throw new Error("Failed pattern match at FormatNix (line 233, column 1 - line 233, column 50): " + [ w.constructor.name, k.constructor.name, v.constructor.name ]);
+              throw new Error("Failed pattern match at FormatNix (line 240, column 1 - line 240, column 50): " + [ w.constructor.name, k.constructor.name, v.constructor.name ]);
           };
       };
   };
@@ -3882,8 +3911,8 @@ var PS = {};
           return postProcess(layout(best(w)(0)(x)) + "\x0a");
       };
   };
-  var printExpr = function ($405) {
-      return pretty(80)(expr2Doc($405));
+  var printExpr = function ($427) {
+      return pretty(80)(expr2Doc($427));
   };
   exports["Expression"] = Expression;
   exports["Comment"] = Comment;
@@ -3907,6 +3936,7 @@ var PS = {};
   exports["Binds"] = Binds;
   exports["AttrPath"] = AttrPath;
   exports["Inherit"] = Inherit;
+  exports["With"] = With;
   exports["Attrs"] = Attrs;
   exports["Select"] = Select;
   exports["Formals"] = Formals;

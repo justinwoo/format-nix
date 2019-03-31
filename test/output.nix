@@ -66,6 +66,8 @@ in -a + b
 
 {
   inherit (x) a b c d;
+
+  z = with (a); 1;
 }
 
 

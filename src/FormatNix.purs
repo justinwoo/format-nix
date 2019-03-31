@@ -60,6 +60,8 @@ data Expr
   | AttrPath String
   -- inherit
   | Inherit (Array Expr)
+  -- with (thing); expr
+  | With Expr Expr
   -- attributes for inherit?
   | Attrs (Array Expr)
   -- as in `set.attr`, Select expr selector_expr
@@ -163,6 +165,11 @@ readNode' (TypeString "bind") n
     = Bind name value
   | otherwise = Unknown "Bind variation" (text n)
 readNode' (TypeString "inherit") n = Inherit $ readNode <$> namedChildren n
+readNode' (TypeString "with") n
+  | children' <- namedChildren n
+  , name : value : Nil <- List.fromFoldable (readNode <$> namedChildren n)
+    = With name value
+  | otherwise = Unknown "With variation" (text n)
 readNode' (TypeString "select") n
   | value : selector : Nil <- List.fromFoldable (readNode <$> namedChildren n)
     = Select value selector
@@ -315,6 +322,7 @@ expr2Doc (Bind name value) =
 expr2Doc (Inherit exprs) = DText "inherit" <> inner <> DText ";"
   where
     inner = dwords $ expr2Doc <$> exprs
+expr2Doc (With name value) = DText "with " <> expr2Doc name <> DText "; " <> expr2Doc value
 expr2Doc (App fn arg) = expr2Doc fn <> DText " " <> expr2Doc arg
 expr2Doc (Formals exprs) = dwords $ expr2Doc <$> exprs
 expr2Doc (Formal identifier Nothing) = expr2Doc identifier
