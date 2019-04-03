@@ -41,6 +41,7 @@ main = launchAff_ do
     , "test/fetch-github.nix"
     , "test/list.nix"
     , "test/nixpkgs-mozilla.nix"
+    , "test/let-with-comment.nix"
     ]
   let output = Array.intercalate "\n\n" results
   writeTextFile UTF8 "test/output.nix" output
