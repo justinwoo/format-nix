@@ -1,0 +1,4 @@
+sudo: required
+dist: trusty
+language: nix
+script: nix-shell travis.nix --run 'npm run ci'

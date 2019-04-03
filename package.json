@@ -8,6 +8,7 @@
   },
   "scripts": {
     "mkbin": "mkdir -p bin && pulp build --to bin/output.js",
+    "ci": "npm i && psc-package install && pulp test",
     "test": "pulp test"
   },
   "author": "Justin Woo",
