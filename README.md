@@ -1,6 +1,6 @@
 # format-nix
 
-A simple formatter for Nix using [tree-parser-nix](https://github.com/cstrahan/tree-sitter-nix).
+A simple formatter for Nix using [tree-sitter-nix](https://github.com/cstrahan/tree-sitter-nix).
 
 Submit bugs by adding PRs for files that fail and adding the input to [tests](test/Main.purs).
 
