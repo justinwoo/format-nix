@@ -70,6 +70,8 @@ data Expr
   | Formals (Array Expr)
   -- set fn arg with an identifier, where it may or may not have a default value expr
   | Formal Expr (Maybe Expr)
+  -- Uri
+  | Uri String
   -- unknown node type, with the type string and text contents
   | Unknown String String
 derive instance eqExpr :: Eq Expr
@@ -194,6 +196,7 @@ readNode' (TypeString "spath") n = Spath (text n)
 readNode' (TypeString "path") n = Path (text n)
 readNode' (TypeString "string") n = StringValue (text n)
 readNode' (TypeString "integer") n = Integer (text n)
+readNode' (TypeString "uri") n = Uri (text n)
 readNode' (TypeString "indented_string") n = StringIndented (text n)
 readNode' (TypeString unknown) n = Unknown unknown (text n)
 
@@ -338,6 +341,7 @@ expr2Doc (Formals exprs) = dwords $ expr2Doc <$> exprs
 expr2Doc (Formal identifier Nothing) = expr2Doc identifier
 expr2Doc (Formal identifier (Just value)) = expr2Doc identifier <> DText " ? " <> expr2Doc value
 expr2Doc (Select value selector) = expr2Doc value <> DText "." <> expr2Doc selector
+expr2Doc (Uri str) = DText str
 
 dwords :: forall f. Foldable f => f Doc -> Doc
 dwords xs = foldMap (\x -> DText " " <> x) xs
