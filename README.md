@@ -12,6 +12,12 @@ Get PureScript and Pulp.
 # never use 'sudo' with npm.
 > npm set prefix ~/.npm
 > npm install
+
+# install purescript and psc-package in some way
+# e.g. github.com/justinwoo/easy-purescript-nix
+# or if you're feeling lucky, npm i -g purescript psc-package
+> psc-package install
+
 > npm run mkbin
 > npm link
 
