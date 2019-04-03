@@ -18,6 +18,9 @@ Get PureScript and Pulp.
 # or if you're feeling lucky, npm i -g purescript psc-package
 > psc-package install
 
+# install pulp in some way
+> npm i -g pulp
+
 > npm run mkbin
 > npm link
 
