@@ -40,6 +40,7 @@ main = launchAff_ do
     , "test/inherits.nix"
     , "test/fetch-github.nix"
     , "test/list.nix"
+    , "test/nixpkgs-mozilla.nix"
     ]
   let output = Array.intercalate "\n\n" results
   writeTextFile UTF8 "test/output.nix" output
