@@ -337,7 +337,9 @@ expr2Doc (Inherit exprs) = DText "inherit" <> inner <> DText ";"
     inner = dwords $ expr2Doc <$> exprs
 expr2Doc (With name value) = DText "with " <> expr2Doc name <> DText "; " <> expr2Doc value
 expr2Doc (App fn arg) = expr2Doc fn <> DText " " <> expr2Doc arg
-expr2Doc (Formals exprs) = dwords $ expr2Doc <$> exprs
+expr2Doc (Formals exprs) = DText " " <> formals
+  where
+    formals = intercalate (DText ", ") $ expr2Doc <$> exprs
 expr2Doc (Formal identifier Nothing) = expr2Doc identifier
 expr2Doc (Formal identifier (Just value)) = expr2Doc identifier <> DText " ? " <> expr2Doc value
 expr2Doc (Select value selector) = expr2Doc value <> DText "." <> expr2Doc selector
