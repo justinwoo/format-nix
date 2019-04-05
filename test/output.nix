@@ -63,6 +63,41 @@ let
 in -a + b
 
 
+(expression (function (formals (formal (identifier) (string)) (formal (identifier) (string))) (binary (identifier) (identifier))))
+{ foo ? "foo", bar ? "bar" }:
+
+foo + bar
+
+
+(expression (function (formals (formal (identifier)) (formal (identifier)) (formal (identifier)) (formal (identifier)) (formal (identifier)) (formal (identifier)) (formal (identifier)) (formal (identifier)) (formal (identifier)) (formal (identifier)) (formal (identifier)) (formal (identifier)) (formal (identifier)) (formal (identifier)) (formal (identifier)) (formal (identifier)) (formal (identifier)) (formal (identifier)) (formal (identifier)) (formal (identifier)) (formal (identifier)) (formal (identifier))) (integer)))
+{
+  apple,
+  bpple,
+  cpple,
+  dpple,
+  epple,
+  fpple,
+  gpple,
+  hpple,
+  ipple,
+  jpple,
+  kpple,
+  lpple,
+  mpple,
+  npple,
+  opple,
+  ppple,
+  qpple,
+  rpple,
+  spple,
+  tpple,
+  upple,
+  vpple
+}:
+
+1
+
+
 (expression (attrset (inherit (quantity (identifier)) (attrs (identifier) (identifier) (identifier) (identifier))) (bind (attrpath (identifier)) (with (quantity (identifier)) (integer))) (inherit (quantity (identifier)) (attrs (identifier) (identifier) (identifier) (identifier) (identifier) (identifier) (identifier) (identifier) (identifier) (identifier) (identifier) (identifier) (identifier) (identifier) (identifier) (identifier) (identifier) (identifier) (identifier) (identifier) (identifier) (identifier)))))
 {
   inherit (x) a b c d;
@@ -141,4 +176,19 @@ import (pkgs.fetchFromGitHub {
   ];
 
   b = [ 1 2 3 4 5 ];
+}
+
+
+(expression (let (binds (bind (attrpath (identifier)) (app (identifier) (quantity (app (select (identifier) (attrpath (identifier))) (uri))))) (bind (attrpath (identifier)) (app (app (identifier) (spath)) (attrset (bind (attrpath (identifier)) (list (identifier))))))) (with (identifier) (app (select (identifier) (attrpath (identifier))) (attrset (bind (attrpath (identifier)) (string)) (bind (attrpath (identifier)) (list (select (identifier) (attrpath (identifier) (identifier) (identifier) (identifier))))))))))
+let
+  moz_overlay = import (builtins.fetchTarball https://github.com/mozilla/nixpkgs-mozilla/archive/master.tar.gz);
+
+  nixpkgs = import <nixpkgs> {
+    overlays = [ moz_overlay ];
+  };
+
+in with nixpkgs; stdenv.mkDerivation {
+  name = "moz_overlay_shell";
+
+  buildInputs = [ nixpkgs.latest.rustChannels.nightly.rust ];
 }
