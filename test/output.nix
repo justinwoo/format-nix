@@ -192,3 +192,15 @@ in with nixpkgs; stdenv.mkDerivation {
 
   buildInputs = [ nixpkgs.latest.rustChannels.nightly.rust ];
 }
+
+
+(expression (let (binds (bind (attrpath (identifier)) (app (identifier) (spath)))) (comment) (with (identifier) (app (select (identifier) (attrpath (identifier))) (attrset (bind (attrpath (identifier)) (string)) (bind (attrpath (identifier)) (list)))))))
+let
+  nixpkgs = import <nixpkgs>;
+  # some comment
+
+in with nixpkgs; stdenv.mkDerivation {
+  name = "something";
+
+  buildInputs = [ ];
+}

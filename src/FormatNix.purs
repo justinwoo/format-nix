@@ -40,8 +40,8 @@ data Expr
   | SetFunction Expr Expr
   -- the main thing, application of a function with its arg?
   | App Expr Expr
-  -- let expr in expr
-  | Let Expr Expr
+  -- let exprs in exprs
+  | Let (Array Expr) (Array Expr)
   -- if cond_exprs then_exprs else_exprs
   | If Expr Expr Expr
   -- a set
@@ -158,8 +158,13 @@ readNode' (TypeString "if") n
     = If (readNode cond) (readNode then_) (readNode else_)
   | otherwise = Unknown "if variation" (text n)
 readNode' (TypeString "let") n
-  | (binds : app : Nil ) <- List.fromFoldable (namedChildren n)
-    = Let (readNode binds) (readNode app)
+  -- take all anonymous nodes minus first (let)
+  | children' <- Array.drop 1 $ children n
+  -- split the array by "in"
+  , Just inIdx <- Array.findIndex (\x -> type_ x == TypeString "in") children'
+  , binds <- readNode <$> Array.take inIdx children'
+  , exprs <- readNode <$> Array.drop (inIdx + 1) children'
+    = Let binds exprs
   | otherwise = Unknown "let variation" (text n)
 readNode' (TypeString "quantity") n
   | expr : Nil <- List.fromFoldable (readNode <$> namedChildren n)
@@ -321,15 +326,18 @@ expr2Doc (Let binds expr) = let_ <> binds' <> in_ <> expr'
   where
     let_ = DText "let"
     in_ = DLine <> DLine <> DText "in "
-    binds' = DNest 1 $ expr2Doc binds
-    expr' = expr2Doc expr
+    binds' = DNest 1 $ dlines $ expr2Doc <$> binds
+    expr'
+      | Array.length expr == 1
+      , Just head <- Array.head expr = expr2Doc head
+      | otherwise = DNest 1 $ dlines $ expr2Doc <$> expr
 expr2Doc (If cond first second) = if_ <> then_ <> else_
   where
     if_ = DText "if " <> expr2Doc cond
     then_ = DNest 1 $ DLine <> (DText "then ") <> expr2Doc first
     else_ = DNest 1 $ DLine <> (DText "else ") <> expr2Doc second
 expr2Doc (Quantity expr) = DText "(" <> expr2Doc expr <> DText ")"
-expr2Doc (Binds exprs) = dlines2 $ expr2Doc <$> exprs
+expr2Doc (Binds exprs) = intercalate (DLine <> DLine) $ expr2Doc <$> exprs
 expr2Doc (Bind name value) =
   expr2Doc name <> DText " = " <> expr2Doc value <> DText ";"
 expr2Doc (Inherit exprs) = DText "inherit" <> inner <> DText ";"
