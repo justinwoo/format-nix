@@ -142,3 +142,30 @@ import (pkgs.fetchFromGitHub {
 
   b = [ 1 2 3 4 5 ];
 }
+
+
+(expression (let (binds (bind (attrpath (identifier)) (app (identifier) (quantity (app (select (identifier) (attrpath (identifier))) (uri))))) (bind (attrpath (identifier)) (app (app (identifier) (spath)) (attrset (bind (attrpath (identifier)) (list (identifier))))))) (with (identifier) (app (select (identifier) (attrpath (identifier))) (attrset (bind (attrpath (identifier)) (string)) (bind (attrpath (identifier)) (list (select (identifier) (attrpath (identifier) (identifier) (identifier) (identifier))))))))))
+let
+  moz_overlay = import (builtins.fetchTarball https://github.com/mozilla/nixpkgs-mozilla/archive/master.tar.gz);
+
+  nixpkgs = import <nixpkgs> {
+    overlays = [ moz_overlay ];
+  };
+
+in with nixpkgs; stdenv.mkDerivation {
+  name = "moz_overlay_shell";
+
+  buildInputs = [ nixpkgs.latest.rustChannels.nightly.rust ];
+}
+
+
+(expression (let (binds (bind (attrpath (identifier)) (app (identifier) (spath)))) (comment) (with (identifier) (app (select (identifier) (attrpath (identifier))) (attrset (bind (attrpath (identifier)) (string)) (bind (attrpath (identifier)) (list)))))))
+let
+  nixpkgs = import <nixpkgs>;
+  # some comment
+
+in with nixpkgs; stdenv.mkDerivation {
+  name = "something";
+
+  buildInputs = [ ];
+}
