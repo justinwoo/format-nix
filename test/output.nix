@@ -63,6 +63,41 @@ let
 in -a + b
 
 
+(expression (function (formals (formal (identifier) (string)) (formal (identifier) (string))) (binary (identifier) (identifier))))
+{ foo ? "foo", bar ? "bar" }:
+
+foo + bar
+
+
+(expression (function (formals (formal (identifier)) (formal (identifier)) (formal (identifier)) (formal (identifier)) (formal (identifier)) (formal (identifier)) (formal (identifier)) (formal (identifier)) (formal (identifier)) (formal (identifier)) (formal (identifier)) (formal (identifier)) (formal (identifier)) (formal (identifier)) (formal (identifier)) (formal (identifier)) (formal (identifier)) (formal (identifier)) (formal (identifier)) (formal (identifier)) (formal (identifier)) (formal (identifier))) (integer)))
+{
+  apple,
+  bpple,
+  cpple,
+  dpple,
+  epple,
+  fpple,
+  gpple,
+  hpple,
+  ipple,
+  jpple,
+  kpple,
+  lpple,
+  mpple,
+  npple,
+  opple,
+  ppple,
+  qpple,
+  rpple,
+  spple,
+  tpple,
+  upple,
+  vpple
+}:
+
+1
+
+
 (expression (attrset (inherit (quantity (identifier)) (attrs (identifier) (identifier) (identifier) (identifier))) (bind (attrpath (identifier)) (with (quantity (identifier)) (integer))) (inherit (quantity (identifier)) (attrs (identifier) (identifier) (identifier) (identifier) (identifier) (identifier) (identifier) (identifier) (identifier) (identifier) (identifier) (identifier) (identifier) (identifier) (identifier) (identifier) (identifier) (identifier) (identifier) (identifier) (identifier) (identifier)))))
 {
   inherit (x) a b c d;

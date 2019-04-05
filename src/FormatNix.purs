@@ -314,7 +314,7 @@ expr2Doc (AttrSet exprs) = if Array.null exprs
     left <> DNest 1 inners <> right
 expr2Doc (RecAttrSet exprs) = DText "rec " <> expr2Doc (AttrSet exprs)
 expr2Doc (SetFunction input output) =
-  DText "{" <> input_ <> DText " }:" <> DLine <> DLine <> output_
+  DText "{" <> input_ <> DText "}:" <> DLine <> DLine <> output_
   where
     input_ = expr2Doc input
     output_ = expr2Doc output
@@ -345,7 +345,11 @@ expr2Doc (Inherit exprs) = DText "inherit" <> inner <> DText ";"
     inner = dwords $ expr2Doc <$> exprs
 expr2Doc (With name value) = DText "with " <> expr2Doc name <> DText "; " <> expr2Doc value
 expr2Doc (App fn arg) = expr2Doc fn <> DText " " <> expr2Doc arg
-expr2Doc (Formals exprs) = dwords $ expr2Doc <$> exprs
+expr2Doc (Formals exprs) = DAlt oneLine lines
+  where
+    exprs' = expr2Doc <$> exprs
+    oneLine = DText " " <> intercalate (DText ", ") exprs' <> DText " "
+    lines = DNest 1 (DLine <> intercalate (DText "," <> DLine) exprs') <> DLine
 expr2Doc (Formal identifier Nothing) = expr2Doc identifier
 expr2Doc (Formal identifier (Just value)) = expr2Doc identifier <> DText " ? " <> expr2Doc value
 expr2Doc (Select value selector) = expr2Doc value <> DText "." <> expr2Doc selector

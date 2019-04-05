@@ -37,6 +37,8 @@ main = launchAff_ do
     [ "test/build.nix"
     , "test/import.nix"
     , "test/signs.nix"
+    , "test/formals.nix"
+    , "test/formals2.nix"
     , "test/inherits.nix"
     , "test/fetch-github.nix"
     , "test/list.nix"
