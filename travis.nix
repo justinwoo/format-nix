@@ -14,9 +14,10 @@ let
 in pkgs.stdenv.mkDerivation {
   name = "travis-shell";
 
-  buildInputs = [ pkgs.nodejs easy-ps.psc-package-simple easy-ps.purs ];
-
-  shellHook = ''
-    npm i pulp
-  '';
+  buildInputs = [
+    pkgs.nodejs
+    pkgs.nodePackages.pulp
+    easy-ps.psc-package-simple
+    easy-ps.purs
+  ];
 }
