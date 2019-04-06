@@ -111,7 +111,9 @@ foreign import mkParser :: TreeSitterLanguage -> TreeSitterParser
 
 foreign import data TreeSitterParser :: Type
 
-foreign import parse :: TreeSitterParser -> String -> Tree
+parse :: TreeSitterParser -> String -> Tree
+parse parser contents = parser'.parse contents
+  where parser' = unsafeCoerce parser :: { parse :: String -> Tree }
 
 foreign import data Tree :: Type
 

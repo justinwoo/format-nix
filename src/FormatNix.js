@@ -10,10 +10,3 @@ exports.mkParser = function(language) {
   parser.setLanguage(language);
   return parser;
 };
-
-// foreign import parse :: TreeSitterParser -> String -> Tree
-exports.parse = function(parser) {
-  return function(contents) {
-    return parser.parse(contents);
-  };
-};
