@@ -1,4 +1,4 @@
-(expression (comment) (function (formals (formal (identifier) (app (app (identifier) (spath)) (attrset)))) (let (binds (bind (attrpath (identifier)) (select (identifier) (attrpath (identifier) (identifier) (identifier) (identifier)))) (bind (attrpath (identifier)) (function (identifier) (if (select (identifier) (attrpath (identifier) (identifier))) (string) (indented_string (interpolation (identifier)) (interpolation (identifier))))))) (app (select (identifier) (attrpath (identifier) (identifier))) (rec_attrset (bind (attrpath (identifier)) (string)) (bind (attrpath (identifier)) (string)) (bind (attrpath (identifier)) (if (select (identifier) (attrpath (identifier) (identifier))) (app (select (identifier) (attrpath (identifier))) (attrset (bind (attrpath (identifier)) (string)) (bind (attrpath (identifier)) (string)))) (app (select (identifier) (attrpath (identifier))) (attrset (bind (attrpath (identifier)) (string)) (bind (attrpath (identifier)) (string)))))) (bind (attrpath (identifier)) (list (select (identifier) (attrpath (identifier))) (select (identifier) (attrpath (identifier))) (select (identifier) (attrpath (identifier))))) (bind (attrpath (identifier)) (app (select (identifier) (attrpath (identifier) (identifier))) (identifier))) (bind (attrpath (identifier)) (identifier)) (bind (attrpath (identifier)) (indented_string (interpolation (app (identifier) (identifier))))))))))
+(expression (comment) (function (formals (formal (identifier) (app (app (identifier) (spath)) (attrset)))) (let (bind (attrpath (identifier)) (select (identifier) (attrpath (identifier) (identifier) (identifier) (identifier)))) (bind (attrpath (identifier)) (function (identifier) (if (select (identifier) (attrpath (identifier) (identifier))) (string) (indented_string (interpolation (identifier)) (interpolation (identifier)))))) (app (select (identifier) (attrpath (identifier) (identifier))) (rec_attrset (bind (attrpath (identifier)) (string)) (bind (attrpath (identifier)) (string)) (bind (attrpath (identifier)) (if (select (identifier) (attrpath (identifier) (identifier))) (app (select (identifier) (attrpath (identifier))) (attrset (bind (attrpath (identifier)) (string)) (bind (attrpath (identifier)) (string)))) (app (select (identifier) (attrpath (identifier))) (attrset (bind (attrpath (identifier)) (string)) (bind (attrpath (identifier)) (string)))))) (bind (attrpath (identifier)) (list (select (identifier) (attrpath (identifier))) (select (identifier) (attrpath (identifier))) (select (identifier) (attrpath (identifier))))) (bind (attrpath (identifier)) (app (select (identifier) (attrpath (identifier) (identifier))) (identifier))) (bind (attrpath (identifier)) (identifier)) (bind (attrpath (identifier)) (indented_string (interpolation (app (identifier) (identifier))))))))))
 # https://github.com/justinwoo/easy-purescript-nix/blob/7255d015b80d28c7c6db655dda215535cb2d4b41/purs.nix
 
 { pkgs ? import <nixpkgs> {} }:
@@ -54,7 +54,7 @@ in pkgs.stdenv.mkDerivation rec {
 import ./build.nix {}
 
 
-(expression (let (binds (bind (attrpath (identifier)) (integer)) (bind (attrpath (identifier)) (integer))) (binary (unary (identifier)) (identifier))))
+(expression (let (bind (attrpath (identifier)) (integer)) (bind (attrpath (identifier)) (integer)) (binary (unary (identifier)) (identifier))))
 let
   a = 123;
 
@@ -98,7 +98,7 @@ foo + bar
 1
 
 
-(expression (attrset (inherit (quantity (identifier)) (attrs (identifier) (identifier) (identifier) (identifier))) (bind (attrpath (identifier)) (with (quantity (identifier)) (integer))) (inherit (quantity (identifier)) (attrs (identifier) (identifier) (identifier) (identifier) (identifier) (identifier) (identifier) (identifier) (identifier) (identifier) (identifier) (identifier) (identifier) (identifier) (identifier) (identifier) (identifier) (identifier) (identifier) (identifier) (identifier) (identifier)))))
+(expression (attrset (inherit (parenthesized (identifier)) (attrs (identifier) (identifier) (identifier) (identifier))) (bind (attrpath (identifier)) (with (parenthesized (identifier)) (integer))) (inherit (parenthesized (identifier)) (attrs (identifier) (identifier) (identifier) (identifier) (identifier) (identifier) (identifier) (identifier) (identifier) (identifier) (identifier) (identifier) (identifier) (identifier) (identifier) (identifier) (identifier) (identifier) (identifier) (identifier) (identifier) (identifier)))))
 {
   inherit (x) a b c d;
 
@@ -130,7 +130,7 @@ foo + bar
 }
 
 
-(expression (comment) (function (formals (formal (identifier) (app (app (identifier) (spath)) (attrset)))) (app (app (identifier) (quantity (app (select (identifier) (attrpath (identifier))) (attrset (bind (attrpath (identifier)) (string)) (bind (attrpath (identifier)) (string)) (bind (attrpath (identifier)) (string)) (bind (attrpath (identifier)) (string)))))) (attrset (inherit (attrs (identifier)))))))
+(expression (comment) (function (formals (formal (identifier) (app (app (identifier) (spath)) (attrset)))) (app (app (identifier) (parenthesized (app (select (identifier) (attrpath (identifier))) (attrset (bind (attrpath (identifier)) (string)) (bind (attrpath (identifier)) (string)) (bind (attrpath (identifier)) (string)) (bind (attrpath (identifier)) (string)))))) (attrset (inherit (attrs (identifier)))))))
 # https://github.com/justinwoo/easy-purescript-nix/blob/7255d015b80d28c7c6db655dda215535cb2d4b41/psc-package2nix.nix
 
 { pkgs ? import <nixpkgs> {} }:
@@ -179,7 +179,7 @@ import (pkgs.fetchFromGitHub {
 }
 
 
-(expression (let (binds (bind (attrpath (identifier)) (app (identifier) (quantity (app (select (identifier) (attrpath (identifier))) (uri))))) (bind (attrpath (identifier)) (app (app (identifier) (spath)) (attrset (bind (attrpath (identifier)) (list (identifier))))))) (with (identifier) (app (select (identifier) (attrpath (identifier))) (attrset (bind (attrpath (identifier)) (string)) (bind (attrpath (identifier)) (list (select (identifier) (attrpath (identifier) (identifier) (identifier) (identifier))))))))))
+(expression (let (bind (attrpath (identifier)) (app (identifier) (parenthesized (app (select (identifier) (attrpath (identifier))) (uri))))) (bind (attrpath (identifier)) (app (app (identifier) (spath)) (attrset (bind (attrpath (identifier)) (list (identifier)))))) (with (identifier) (app (select (identifier) (attrpath (identifier))) (attrset (bind (attrpath (identifier)) (string)) (bind (attrpath (identifier)) (list (select (identifier) (attrpath (identifier) (identifier) (identifier) (identifier))))))))))
 let
   moz_overlay = import (builtins.fetchTarball https://github.com/mozilla/nixpkgs-mozilla/archive/master.tar.gz);
 
@@ -194,9 +194,10 @@ in with nixpkgs; stdenv.mkDerivation {
 }
 
 
-(expression (let (binds (bind (attrpath (identifier)) (app (identifier) (spath)))) (comment) (with (identifier) (app (select (identifier) (attrpath (identifier))) (attrset (bind (attrpath (identifier)) (string)) (bind (attrpath (identifier)) (list)))))))
+(expression (let (bind (attrpath (identifier)) (app (identifier) (spath))) (comment) (with (identifier) (app (select (identifier) (attrpath (identifier))) (attrset (bind (attrpath (identifier)) (string)) (bind (attrpath (identifier)) (list)))))))
 let
   nixpkgs = import <nixpkgs>;
+
   # some comment
 
 in with nixpkgs; stdenv.mkDerivation {
