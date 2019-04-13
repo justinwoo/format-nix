@@ -48,14 +48,12 @@ data Expr
   | AttrSet (Array Expr)
   -- a recursive attr set
   | RecAttrSet (Array Expr)
-  -- quantity
-  | Quantity Expr
+  -- parenthesized
+  | Parens Expr
   -- a list
   | List (Array Expr)
   -- bind, e.g. owner = 1;
   | Bind Expr Expr
-  -- multiple bind
-  | Binds (Array Expr)
   -- attrpath, only contains Identifier? e.g. owner of owner = 1;
   | AttrPath String
   -- inherit
@@ -146,7 +144,6 @@ readNode' (TypeString "formal") n
       identifier : Nil -> Formal identifier Nothing
       identifier : default : Nil -> Formal identifier (Just default)
       _ -> Unknown "formal varigation" (text n)
-readNode' (TypeString "binds") n = readChildren Binds n
 readNode' (TypeString "attrset") n =  AttrSet $ readNode <$> namedChildren n
 readNode' (TypeString "list") n =  List $ readNode <$> namedChildren n
 readNode' (TypeString "rec_attrset") n =  RecAttrSet $ readNode <$> namedChildren n
@@ -168,10 +165,10 @@ readNode' (TypeString "let") n
   , exprs <- readNode <$> Array.drop (inIdx + 1) children'
     = Let binds exprs
   | otherwise = Unknown "let variation" (text n)
-readNode' (TypeString "quantity") n
+readNode' (TypeString "parenthesized") n
   | expr : Nil <- List.fromFoldable (readNode <$> namedChildren n)
-    = Quantity expr
-  | otherwise = Unknown "quantity variation" (text n)
+    = Parens expr
+  | otherwise = Unknown "parenthesized variation" (text n)
 readNode' (TypeString "bind") n
   | children' <- namedChildren n
   , name : value : Nil <- List.fromFoldable (readNode <$> namedChildren n)
@@ -328,18 +325,17 @@ expr2Doc (Let binds expr) = let_ <> binds' <> in_ <> expr'
   where
     let_ = DText "let"
     in_ = DLine <> DLine <> DText "in "
-    binds' = DNest 1 $ dlines $ expr2Doc <$> binds
+    binds' = DNest 1 $ dlines2 $ expr2Doc <$> binds
     expr'
       | Array.length expr == 1
       , Just head <- Array.head expr = expr2Doc head
-      | otherwise = DNest 1 $ dlines $ expr2Doc <$> expr
+      | otherwise = DNest 1 $ dlines2 $ expr2Doc <$> expr
 expr2Doc (If cond first second) = if_ <> then_ <> else_
   where
     if_ = DText "if " <> expr2Doc cond
     then_ = DNest 1 $ DLine <> (DText "then ") <> expr2Doc first
     else_ = DNest 1 $ DLine <> (DText "else ") <> expr2Doc second
-expr2Doc (Quantity expr) = DText "(" <> expr2Doc expr <> DText ")"
-expr2Doc (Binds exprs) = intercalate (DLine <> DLine) $ expr2Doc <$> exprs
+expr2Doc (Parens expr) = DText "(" <> expr2Doc expr <> DText ")"
 expr2Doc (Bind name value) =
   expr2Doc name <> DText " = " <> expr2Doc value <> DText ";"
 expr2Doc (Inherit exprs) = DText "inherit" <> inner <> DText ";"
