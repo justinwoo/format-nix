@@ -15,7 +15,7 @@
   "license": "MIT",
   "dependencies": {
     "tree-sitter": "^0.14.0",
-    "tree-sitter-nix": "github:justinwoo/tree-sitter-nix#quantity"
+    "tree-sitter-nix": "github:cstrahan/tree-sitter-nix#c885d29d567d5d99c0774da7ee20a575a0b733f4"
   },
   "directories": {
     "test": "test"
