@@ -66,6 +66,8 @@ data Expr
   | Select Expr Expr
   -- set fn args, e.g. inside of braces { pkgs ? import <nixpkgs> {} }:
   | Formals (Array Expr)
+  -- ellipses, they show up in formals
+  | Ellipses
   -- set fn arg with an identifier, where it may or may not have a default value expr
   | Formal Expr (Maybe Expr)
   -- Uri
@@ -194,6 +196,7 @@ readNode' (TypeString "binary") n
   , x : sign : y : Nil <- List.fromFoldable children'
     = Binary (readNode x) (text sign) (readNode y)
   | otherwise = Unknown "Binary variation" (text n)
+readNode' (TypeString "ellipses") n = Ellipses
 readNode' (TypeString "attrpath") n = AttrPath (text n)
 readNode' (TypeString "identifier") n = Identifier (text n)
 readNode' (TypeString "spath") n = Spath (text n)
@@ -280,6 +283,7 @@ trimRight s = s'.trimRight unit
   where s' = unsafeCoerce s :: { trimRight :: Unit -> String }
 
 expr2Doc :: Expr -> Doc
+expr2Doc Ellipses = DText "..."
 expr2Doc (Comment str) = DText str
 expr2Doc (Identifier str) = DText str
 expr2Doc (Spath str) = DText str

@@ -205,3 +205,11 @@ in with nixpkgs; stdenv.mkDerivation {
 
   buildInputs = [ ];
 }
+
+
+(expression (function (formals (formal (identifier)) (formal (identifier)) (ellipses)) (attrset (bind (attrpath (identifier) (identifier)) (string)))))
+{ config, pkgs, ... }:
+
+{
+  system.stateVersion = "19.09";
+}

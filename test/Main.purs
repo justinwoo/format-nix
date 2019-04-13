@@ -44,7 +44,7 @@ main = launchAff_ do
     , "test/list.nix"
     , "test/nixpkgs-mozilla.nix"
     , "test/let-with-comment.nix"
-    , "test/unknown-function-variation.nix"
+    , "test/formals-ellipses.nix"
     ]
   let output = Array.intercalate "\n\n" results
   writeTextFile UTF8 "test/output.nix" output
