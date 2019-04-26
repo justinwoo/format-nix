@@ -22,12 +22,10 @@ in pkgs.stdenv.mkDerivation rec {
   src = if pkgs.stdenv.isDarwin
     then pkgs.fetchurl {
       url = "https://github.com/purescript/purescript/releases/download/v0.12.3/macos.tar.gz";
-
       sha256 = "1f916gv4fz571l4jvr15xjnsvjyy4nljv2ii9njwlm7k6yr5m0qn";
     }
     else pkgs.fetchurl {
       url = "https://github.com/purescript/purescript/releases/download/v0.12.3/linux64.tar.gz";
-
       sha256 = "1fad862a2sv4njxbbcfzibbi585m6is3ywb94nmjl8ax254baj3i";
     };
 
@@ -137,11 +135,8 @@ foo + bar
 
 import (pkgs.fetchFromGitHub {
   owner = "justinwoo";
-
   repo = "psc-package2nix";
-
   rev = "b4d6a834ac124440a503f0510b8a9de95532b16c";
-
   sha256 = "0g9fq4j472bcr1x5na6mzr3av95xhvdmnlns1ncvsl4kqa8ix2zr";
 }) {
   inherit pkgs;
