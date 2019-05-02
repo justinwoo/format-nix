@@ -1,0 +1,36 @@
+{
+  "name": "tree-sitter-nix",
+  "version": "0.0.1",
+  "description": "Tree Sitter grammar for Nix",
+  "main": "index.js",
+  "scripts": {
+    "test": "tree-sitter test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cstrahan/tree-sitter-nix.git"
+  },
+  "author": "Charles Strahan",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/cstrahan/tree-sitter-nix/issues"
+  },
+  "homepage": "https://github.com/cstrahan/tree-sitter-nix#readme",
+  "dependencies": {
+    "nan": "^2.13.1",
+    "tree-sitter": "^0.14.0"
+  },
+  "devDependencies": {
+    "tree-sitter-cli": "^0.14.5"
+  },
+  "tree-sitter": [
+    {
+      "scope": "source.nix",
+      "file-types": [
+        "nix"
+      ],
+      "highlights": "src/highlights.json",
+      "injection-regex": "^(nix)$"
+    }
+  ]
+}

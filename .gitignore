@@ -1,3 +1,11 @@
 node_modules
 .psc-package*
 output
+
+
+#Added by cargo
+#
+#already existing elements are commented out
+
+/target
+**/*.rs.bk
