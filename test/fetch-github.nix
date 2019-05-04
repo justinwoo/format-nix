@@ -1,4 +1,5 @@
 # https://github.com/justinwoo/easy-purescript-nix/blob/7255d015b80d28c7c6db655dda215535cb2d4b41/psc-package2nix.nix
+
 { pkgs ? import <nixpkgs> {} }:
 
 import (pkgs.fetchFromGitHub {
