@@ -6,6 +6,10 @@ A simple formatter for Nix using [tree-sitter-nix](https://github.com/cstrahan/t
 
 Submit bugs by adding PRs for files that fail and adding the input to [tests](test/Main.purs).
 
+## Installation
+
+Please read this post to understand how to consume Node projects: <https://github.com/justinwoo/my-blog-posts/blob/master/posts/2019-05-14-consuming-node-projects-for-nix-users.md>
+
 ## Development setup
 
 Get PureScript and Pulp.
