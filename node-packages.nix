@@ -283,13 +283,13 @@ let
         sha512 = "boQj1WFgQH3v4clhu3mTNfP+vOBxorDlE8EKiMjUlLG3C4qAESnn9AxIOkFgTR2c9LtzNjPrjS60cT27ZKBhaA==";
       };
     };
-    "node-abi-2.7.1" = {
+    "node-abi-2.8.0" = {
       name = "node-abi";
       packageName = "node-abi";
-      version = "2.7.1";
+      version = "2.8.0";
       src = fetchurl {
-        url = "https://registry.npmjs.org/node-abi/-/node-abi-2.7.1.tgz";
-        sha512 = "OV8Bq1OrPh6z+Y4dqwo05HqrRL9YNF7QVMRfq1/pguwKLG+q9UB/Lk0x5qXjO23JjJg+/jqCHSTaG1P3tfKfuw==";
+        url = "https://registry.npmjs.org/node-abi/-/node-abi-2.8.0.tgz";
+        sha512 = "1/aa2clS0pue0HjckL62CsbhWWU35HARvBDXcJtYKbYR7LnIutmpxmXbuDMV9kEviD2lP/wACOgWmmwljghHyQ==";
       };
     };
     "noop-logger-0.1.1" = {
@@ -346,13 +346,13 @@ let
         sha1 = "ffbc4988336e0e833de0c168c7ef152121aa7fb3";
       };
     };
-    "prebuild-install-5.2.5" = {
+    "prebuild-install-5.3.0" = {
       name = "prebuild-install";
       packageName = "prebuild-install";
-      version = "5.2.5";
+      version = "5.3.0";
       src = fetchurl {
-        url = "https://registry.npmjs.org/prebuild-install/-/prebuild-install-5.2.5.tgz";
-        sha512 = "6uZgMVg7yDfqlP5CPurVhtq3hUKBFNufiar4J5hZrlHTo59DDBEtyxw01xCdFss9j0Zb9+qzFVf/s4niayba3w==";
+        url = "https://registry.npmjs.org/prebuild-install/-/prebuild-install-5.3.0.tgz";
+        sha512 = "aaLVANlj4HgZweKttFNUVNRxDukytuIuxeK2boIMHjagNJCiVKWFsKF4tCE3ql3GbrD2tExPQ7/pwtEJcHNZeg==";
       };
     };
     "process-nextick-args-2.0.0" = {
@@ -526,14 +526,14 @@ let
         sha512 = "aBdFQrQWodjA4MEC7JwPw3M0vhcL3BD4Ivj5jmL6Y8aThGdFxjO0YJzo+//yK8O5RHvfA6rgJa5CYZ2z4qzQrw==";
       };
     };
-    "tree-sitter-nix-git://github.com/justinwoo/tree-sitter-nix#quantity" = {
+    "tree-sitter-nix-git://github.com/cstrahan/tree-sitter-nix#c885d29d567d5d99c0774da7ee20a575a0b733f4" = {
       name = "tree-sitter-nix";
       packageName = "tree-sitter-nix";
       version = "0.0.1";
       src = fetchgit {
-        url = "git://github.com/justinwoo/tree-sitter-nix";
-        rev = "be4323518cc907f460aa12e5f102eed00753225e";
-        sha256 = "98d2d123f7e36b0558fc4bfcb44396448c3ca88993ed2b0c558659e2090d2037";
+        url = "git://github.com/cstrahan/tree-sitter-nix";
+        rev = "c885d29d567d5d99c0774da7ee20a575a0b733f4";
+        sha256 = "5c89cd94893937ced7e34d1ddbc922cd54792cc0785eb7a2c8b69e05e8efb1cd";
       };
     };
     "tunnel-agent-0.6.0" = {
@@ -631,14 +631,14 @@ let
       })
       sources."nan-2.13.2"
       sources."napi-build-utils-1.0.1"
-      sources."node-abi-2.7.1"
+      sources."node-abi-2.8.0"
       sources."noop-logger-0.1.1"
       sources."npmlog-4.1.2"
       sources."number-is-nan-1.0.1"
       sources."object-assign-4.1.1"
       sources."once-1.4.0"
       sources."os-homedir-1.0.2"
-      sources."prebuild-install-5.2.5"
+      sources."prebuild-install-5.3.0"
       sources."process-nextick-args-2.0.0"
       sources."pump-2.0.1"
       sources."rc-1.2.8"
@@ -661,7 +661,7 @@ let
       sources."tar-stream-1.6.2"
       sources."to-buffer-1.1.1"
       sources."tree-sitter-0.14.0"
-      sources."tree-sitter-nix-git://github.com/justinwoo/tree-sitter-nix#quantity"
+      sources."tree-sitter-nix-git://github.com/cstrahan/tree-sitter-nix#c885d29d567d5d99c0774da7ee20a575a0b733f4"
       sources."tunnel-agent-0.6.0"
       sources."util-deprecate-1.0.2"
       sources."which-pm-runs-1.0.0"
