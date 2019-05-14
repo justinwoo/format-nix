@@ -3,12 +3,14 @@ module Test.Main where
 import Prelude
 
 import Data.Array as Array
+import Data.Either (Either(..))
 import Data.String as String
 import Data.Traversable (traverse)
 import Effect (Effect)
 import Effect.Aff (Aff, error, launchAff_, throwError)
+import Effect.Aff as Aff
 import Effect.Class.Console (log)
-import FormatNix (TreeSitterParser, children, mkParser, nixLanguage, nodeToString, parse, printExpr, readNode, rootNode)
+import FormatNix (TreeSitterParser, UnknownExpr(..), children, mkParser, nixLanguage, nodeToString, parse, printExpr, readNode, rootNode)
 import Node.Encoding (Encoding(..))
 import Node.FS.Aff (readTextFile, writeTextFile)
 import Node.Path (FilePath)
@@ -21,7 +23,11 @@ processInput filepath = do
   input <- readTextFile UTF8 filepath
   let node = rootNode $ parse parser input
   let string = nodeToString node
-  let nodes = readNode <$> children node
+  let eNodes = readNode `traverse` children node
+  nodes <- case eNodes of
+    Right xs -> pure xs
+    Left (Unknown tag str) -> do
+      throwError $ Aff.error $  "Error: contained unknown: " <> tag <> "\n" <> str
   let output = Array.intercalate "\n" $ printExpr <$> nodes
 
   log $ "printing " <> filepath <> ":"
