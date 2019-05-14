@@ -1,5 +1,5 @@
 {
-  "name": "@justinwoo/format-nix",
+  "name": "format-nix",
   "version": "1.0.0",
   "description": "Formatter for Nix using tree-sitter-nix",
   "main": "index.js",
