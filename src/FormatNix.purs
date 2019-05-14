@@ -3,13 +3,14 @@ module FormatNix where
 import Prelude
 
 import Data.Array as Array
+import Data.Either (Either(..))
 import Data.Foldable (class Foldable)
 import Data.List (List(..), (:))
 import Data.List as List
 import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype)
 import Data.String as String
-import Data.Traversable (foldMap, intercalate)
+import Data.Traversable (foldMap, intercalate, traverse)
 import Motsunabe (Doc(..), pretty)
 import Unsafe.Coerce (unsafeCoerce)
 
@@ -72,9 +73,10 @@ data Expr
   | Formal Expr (Maybe Expr)
   -- Uri
   | Uri String
-  -- unknown node type, with the type string and text contents
-  | Unknown String String
 derive instance eqExpr :: Eq Expr
+
+-- unknown node type, with the type string and text contents
+data UnknownExpr = Unknown String String
 
 -- | Node from tree-sitter
 foreign import data Node :: Type
@@ -125,87 +127,95 @@ nodeToString :: Node -> String
 nodeToString node = node'.toString unit
   where node' = unsafeCoerce node :: { toString :: Unit -> String }
 
-readNode :: Node -> Expr
+type ReadResult = Either UnknownExpr Expr
+
+readNode :: Node -> ReadResult
 readNode n = readNode' (type_ n) n
 
-readChildren :: (Array Expr -> Expr) -> Node -> Expr
-readChildren = \ctr n -> ctr $ readNode <$> namedChildren n
+readChildren :: (Array Expr -> Expr) -> Node -> ReadResult
+readChildren = \ctr n -> ctr <$> readNode `traverse` namedChildren n
 
-readNode' :: TypeString -> Node -> Expr
-readNode' (TypeString "comment") n = Comment (text n)
+readNode' :: TypeString -> Node -> ReadResult
+readNode' (TypeString "comment") n = Right $ Comment (text n)
 readNode' (TypeString "function") n
-  | (input : output : Nil ) <- List.fromFoldable (readNode <$> namedChildren n)
+  | (Right input : Right output : Nil ) <- List.fromFoldable (readNode <$> namedChildren n)
     = case input of
-        Formals _ -> SetFunction input output
-        _ -> Function input output
-  | otherwise = Unknown "function variation" (text n)
+        Formals _ -> Right $ SetFunction input output
+        _ -> Right $ Function input output
+  | otherwise = Left $ Unknown "function variation" (text n)
 readNode' (TypeString "formals") n = readChildren Formals n
 readNode' (TypeString "formal") n
   | children' <- List.fromFoldable (readNode <$> namedChildren n)
   = case children' of
-      identifier : Nil -> Formal identifier Nothing
-      identifier : default : Nil -> Formal identifier (Just default)
-      _ -> Unknown "formal varigation" (text n)
-readNode' (TypeString "attrset") n =  AttrSet $ readNode <$> namedChildren n
-readNode' (TypeString "list") n =  List $ readNode <$> namedChildren n
-readNode' (TypeString "rec_attrset") n =  RecAttrSet $ readNode <$> namedChildren n
+      Right identifier : Nil -> Right $ Formal identifier Nothing
+      Right identifier : Right default : Nil -> Right $ Formal identifier (Just default)
+      _ -> Left $ Unknown "formal varigation" (text n)
+readNode' (TypeString "attrset") n = AttrSet <$> readNode `traverse` namedChildren n
+readNode' (TypeString "list") n = List <$> readNode `traverse` namedChildren n
+readNode' (TypeString "rec_attrset") n =  RecAttrSet <$> readNode `traverse` namedChildren n
 readNode' (TypeString "attrs") n = readChildren Attrs n
 readNode' (TypeString "app") n
-  | (fn : arg : Nil ) <- List.fromFoldable (readNode <$> namedChildren n)
-    = App fn arg
-  | otherwise = Unknown "App variation" (text n)
+  | (Right fn : Right arg : Nil ) <- List.fromFoldable (readNode <$> namedChildren n)
+    = Right $ App fn arg
+  | otherwise = Left $ Unknown "App variation" (text n)
 readNode' (TypeString "if") n
   | (cond : then_ : else_ : Nil ) <- List.fromFoldable (namedChildren n)
-    = If (readNode cond) (readNode then_) (readNode else_)
-  | otherwise = Unknown "if variation" (text n)
+  , Right cond' <- readNode cond
+  , Right then' <- readNode then_
+  , Right else' <- readNode else_
+    = Right $ If cond' then' else'
+  | otherwise = Left $ Unknown "if variation" (text n)
 readNode' (TypeString "let") n
   -- take all anonymous nodes minus first (let)
   | children' <- Array.drop 1 $ children n
   -- split the array by "in"
   , Just inIdx <- Array.findIndex (\x -> type_ x == TypeString "in") children'
-  , binds <- readNode <$> Array.take inIdx children'
-  , exprs <- readNode <$> Array.drop (inIdx + 1) children'
-    = Let binds exprs
-  | otherwise = Unknown "let variation" (text n)
+  , Right binds <- readNode `traverse` Array.take inIdx children'
+  , Right exprs <- readNode `traverse` Array.drop (inIdx + 1) children'
+    = Right $ Let binds exprs
+  | otherwise = Left $ Unknown "let variation" (text n)
 readNode' (TypeString "parenthesized") n
-  | expr : Nil <- List.fromFoldable (readNode <$> namedChildren n)
-    = Parens expr
-  | otherwise = Unknown "parenthesized variation" (text n)
+  | Right expr : Nil <- List.fromFoldable (readNode <$> namedChildren n)
+    = Right $ Parens expr
+  | otherwise = Left $ Unknown "parenthesized variation" (text n)
 readNode' (TypeString "bind") n
   | children' <- namedChildren n
-  , name : value : Nil <- List.fromFoldable (readNode <$> namedChildren n)
-    = Bind name value
-  | otherwise = Unknown "Bind variation" (text n)
-readNode' (TypeString "inherit") n = Inherit $ readNode <$> namedChildren n
+  , Right name : Right value : Nil <- List.fromFoldable (readNode <$> namedChildren n)
+    = Right $ Bind name value
+  | otherwise = Left $ Unknown "Bind variation" (text n)
+readNode' (TypeString "inherit") n = Inherit <$> readNode `traverse` namedChildren n
 readNode' (TypeString "with") n
   | children' <- namedChildren n
-  , name : value : Nil <- List.fromFoldable (readNode <$> namedChildren n)
-    = With name value
-  | otherwise = Unknown "With variation" (text n)
+  , Right name : Right value : Nil <- List.fromFoldable (readNode <$> namedChildren n)
+    = Right $ With name value
+  | otherwise = Left $ Unknown "With variation" (text n)
 readNode' (TypeString "select") n
-  | value : selector : Nil <- List.fromFoldable (readNode <$> namedChildren n)
-    = Select value selector
-  | otherwise = Unknown "Select variation" (text n)
+  | Right value : Right selector : Nil <- List.fromFoldable (readNode <$> namedChildren n)
+    = Right $ Select value selector
+  | otherwise = Left $ Unknown "Select variation" (text n)
 readNode' (TypeString "unary") n
   | children' <- children n
   , sign : expr : Nil <- List.fromFoldable children'
-    = Unary (text sign) (readNode expr)
-  | otherwise = Unknown "Unary variation" (text n)
+  , Right expr' <- readNode expr
+    = Right $ Unary (text sign) expr'
+  | otherwise = Left $ Unknown "Unary variation" (text n)
 readNode' (TypeString "binary") n
   | children' <- children n
   , x : sign : y : Nil <- List.fromFoldable children'
-    = Binary (readNode x) (text sign) (readNode y)
-  | otherwise = Unknown "Binary variation" (text n)
-readNode' (TypeString "ellipses") n = Ellipses
-readNode' (TypeString "attrpath") n = AttrPath (text n)
-readNode' (TypeString "identifier") n = Identifier (text n)
-readNode' (TypeString "spath") n = Spath (text n)
-readNode' (TypeString "path") n = Path (text n)
-readNode' (TypeString "string") n = StringValue (text n)
-readNode' (TypeString "integer") n = Integer (text n)
-readNode' (TypeString "uri") n = Uri (text n)
-readNode' (TypeString "indented_string") n = StringIndented (text n)
-readNode' (TypeString unknown) n = Unknown unknown (text n)
+  , Right x' <- readNode x
+  , Right y' <- readNode y
+    = Right $ Binary x' (text sign) y'
+  | otherwise = Left $ Unknown "Binary variation" (text n)
+readNode' (TypeString "ellipses") n = Right Ellipses
+readNode' (TypeString "attrpath") n = Right $ AttrPath (text n)
+readNode' (TypeString "identifier") n = Right $ Identifier (text n)
+readNode' (TypeString "spath") n = Right $ Spath (text n)
+readNode' (TypeString "path") n = Right $ Path (text n)
+readNode' (TypeString "string") n = Right $ StringValue (text n)
+readNode' (TypeString "integer") n = Right $ Integer (text n)
+readNode' (TypeString "uri") n = Right $ Uri (text n)
+readNode' (TypeString "indented_string") n = Right $ StringIndented (text n)
+readNode' (TypeString unknown) n = Left $ Unknown unknown (text n)
 
 -- extra contextual information for generating Doc from Expr
 type Context =
@@ -228,7 +238,6 @@ expr2Doc ctx (Integer str) = DText str
 expr2Doc ctx (AttrPath str) = DText str
 expr2Doc ctx (StringValue str) = DText str
 expr2Doc ctx (StringIndented str) = DText str
-expr2Doc ctx (Unknown tag str) = DText $ "Unknown " <> tag <> " " <> str
 expr2Doc ctx (Unary sign expr) = DText sign <> expr2Doc ctx expr
 expr2Doc ctx (Binary x sign y) = expr2Doc ctx x <> DText (" " <> sign <> " ") <> expr2Doc ctx y
 expr2Doc ctx (Expression exprs) = dlines $ expr2Doc ctx <$> exprs
