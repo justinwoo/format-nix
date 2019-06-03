@@ -1,6 +1,6 @@
 {
   "name": "format-nix",
-  "set": "psc-0.12.5-20190424",
+  "set": "psc-0.13.0-20190602",
   "source": "https://github.com/purescript/package-sets.git",
   "depends": [
     "aff",

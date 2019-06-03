@@ -51,6 +51,7 @@ main = launchAff_ do
     , "test/nixpkgs-mozilla.nix"
     , "test/let-with-comment.nix"
     , "test/formals-ellipses.nix"
+    , "test/interpolation.nix"
     ]
   let output = Array.intercalate "\n\n" results
   writeTextFile UTF8 "test/output.nix" output

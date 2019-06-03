@@ -208,3 +208,14 @@ in with nixpkgs; stdenv.mkDerivation {
 {
   system.stateVersion = "19.09";
 }
+
+
+(expression (let (bind (attrpath (identifier)) (string)) (bind (attrpath (identifier)) (string)) (indented_string (interpolation (identifier)) (interpolation (identifier)))))
+let
+  hello = "123";
+
+  world = "456";
+
+in ''
+  first: ${hello} second: ${world}
+''
