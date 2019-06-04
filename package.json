@@ -7,7 +7,7 @@
     "format-nix": "bin/index.js"
   },
   "scripts": {
-    "mkbin": "mkdir -p bin && pulp build --to bin/output.js",
+    "mkbin": "mkdir -p bin && pulp build --include app --to bin/output.js",
     "ci": "npm i && psc-package install && pulp test",
     "test": "pulp test"
   },
