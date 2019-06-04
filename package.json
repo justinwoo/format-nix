@@ -7,9 +7,9 @@
     "format-nix": "bin/index.js"
   },
   "scripts": {
-    "mkbin": "mkdir -p bin && pulp build --include app --to bin/output.js",
-    "ci": "npm i && psc-package install && pulp test",
-    "test": "pulp test"
+    "mkbin": "mkdir -p bin && pulp --psc-package build --include app --to bin/output.js",
+    "ci": "npm i && psc-package install && pulp --psc-package test",
+    "test": "pulp --psc-package test"
   },
   "author": "Justin Woo",
   "license": "MIT",
