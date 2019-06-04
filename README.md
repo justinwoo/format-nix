@@ -72,3 +72,18 @@ Try putting this in your init.el or wherever:
  :keymaps 'normal
  "SPC m p n" 'run-format-nix)
 ```
+
+## PureScript Library
+
+This project is now also a PureScript library, although a very small one. To use this, please match installations of your npm dependencies to the declared dependencies in `package.json`, e.g. <https://github.com/justinwoo/format-nix/blob/105a19245e72682d5b867b9ba31d6d26b9f9d054/package.json#L16-L19>:
+
+```js
+{
+  // ...
+  "dependencies": {
+    "tree-sitter": "^0.14.0",
+    "tree-sitter-nix": "github:cstrahan/tree-sitter-nix#c885d29d567d5d99c0774da7ee20a575a0b733f4"
+  },
+  // ...
+}
+```
