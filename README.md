@@ -81,8 +81,8 @@ This project is now also a PureScript library, although a very small one. To use
 {
   // ...
   "dependencies": {
-    "tree-sitter": "^0.14.0",
-    "tree-sitter-nix": "github:cstrahan/tree-sitter-nix#c885d29d567d5d99c0774da7ee20a575a0b733f4"
+    "tree-sitter": "^0.15.1",
+    "tree-sitter-nix": "github:cstrahan/tree-sitter-nix#791b5ff0e4f0da358cbb941788b78d436a2ca621"
   },
   // ...
 }
