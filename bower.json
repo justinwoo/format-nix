@@ -14,7 +14,7 @@
   ],
   "dependencies": {
     "purescript-generics-rep": "^6.1.1",
-    "purescript-motsunabe": "^1.0.0",
+    "purescript-motsunabe": "^2.0.0",
     "purescript-prelude": "^4.1.1"
   },
   "devDependencies": {

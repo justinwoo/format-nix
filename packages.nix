@@ -370,11 +370,11 @@ let
 
     "motsunabe" = pkgs.stdenv.mkDerivation {
       name = "motsunabe";
-      version = "v1.0.0";
+      version = "v2.0.0";
       src = pkgs.fetchgit {
         url = "https://github.com/justinwoo/purescript-motsunabe.git";
-        rev = "v1.0.0";
-        sha256 = "04i89kvb6d8cz71hqdk1avxrdfmy9zvf45qlnk3bz5xwi123bx8i";
+        rev = "v2.0.0";
+        sha256 = "03r81xs0gw5nchm93ap2lpirkng8bzgsb8xc5jxlii4sw8wn8ndh";
       };
       phases = "installPhase";
       installPhase = "ln -s $src $out";
@@ -660,7 +660,7 @@ let
 in {
   inherit inputs;
 
-  set = "psc-0.13.0-20190602";
-  source = "https://github.com/purescript/package-sets.git";
-  sha256 = "1zqf8sjiix29rwv6yym15f795qgrdvprx88jw0sqwsailfl85jq2";
+  set = "motsu-190613";
+  source = "https://github.com/justinwoo/package-sets.git";
+  sha256 = "1l2hqn7achcz70f64q35l38da50zdf6dg68wf7b0wh6ks9dhryva";
 }
