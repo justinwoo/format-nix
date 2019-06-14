@@ -660,7 +660,7 @@ let
 in {
   inherit inputs;
 
-  set = "motsu-190613";
-  source = "https://github.com/justinwoo/package-sets.git";
+  set = "psc-0.13.0-20190614";
+  source = "https://github.com/purescript/package-sets.git";
   sha256 = "1l2hqn7achcz70f64q35l38da50zdf6dg68wf7b0wh6ks9dhryva";
 }
