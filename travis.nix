@@ -6,9 +6,9 @@ let
 
     repo = "easy-purescript-nix";
 
-    rev = "647b28018c348832e47a0f17aa0994f0e4c1e5b5";
+    rev = "e3501174123c884d5878b42a48e361aa113cdead";
 
-    sha256 = "0r6jvq64fbfyw8acl7xcfm0wsq1n52jbx6a2s31fdgk5hg30ch8f";
+    sha256 = "1c28ml262qnh7c1rsz86gnmrj9k9gi35rxh2mx1mwr2ac5dl213a";
   });
 
 in pkgs.stdenv.mkDerivation {
@@ -16,8 +16,7 @@ in pkgs.stdenv.mkDerivation {
 
   buildInputs = [
     pkgs.nodejs
-    pkgs.nodePackages.pulp
-    easy-ps.psc-package-simple
     easy-ps.purs
+    easy-ps.spago
   ];
 }
