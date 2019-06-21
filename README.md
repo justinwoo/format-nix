@@ -12,20 +12,17 @@ Please read this post to understand how to consume Node projects: <https://githu
 
 ## Development setup
 
-Get PureScript and Pulp.
+Get PureScript and Spago.
 
 ```
 # never use 'sudo' with npm.
 > npm set prefix ~/.npm
 > npm install
 
-# install purescript and psc-package in some way
+# install purescript and spago in some way
 # e.g. github.com/justinwoo/easy-purescript-nix
-# or if you're feeling lucky, npm i -g purescript psc-package
-> psc-package install
-
-# install pulp in some way
-> npm i -g pulp
+# or if you're feeling lucky, npm i -g purescript spago
+> spago install
 
 > npm run mkbin
 > npm link
