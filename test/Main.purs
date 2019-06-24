@@ -28,14 +28,16 @@ processInput filepath = do
     Right xs -> pure xs
     Left (Unknown tag str) -> do
       throwError $ Aff.error $  "Error: contained unknown: " <> tag <> "\n" <> str
+  let shown = Array.intercalate "\n" $ show <$> nodes
   let output = Array.intercalate "\n" $ printExpr <$> nodes
 
   log $ "printing " <> filepath <> ":"
   log string
+  log shown
   log output
   log ""
 
-  pure $ string <> "\n" <> output
+  pure $ string <> "\n" <> shown <> "\n" <> output
 
 main :: Effect Unit
 main = launchAff_ do
