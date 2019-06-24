@@ -5,6 +5,8 @@ import Prelude
 import Data.Array as Array
 import Data.Either (Either(..))
 import Data.Foldable (class Foldable)
+import Data.Generic.Rep (class Generic)
+import Data.Generic.Rep.Show (genericShow)
 import Data.List (List(..), (:))
 import Data.List as List
 import Data.Maybe (Maybe(..))
@@ -74,6 +76,9 @@ data Expr
   -- Uri
   | Uri String
 derive instance eqExpr :: Eq Expr
+derive instance genericsExpr :: Generic Expr _
+instance showExpr :: Show Expr where
+  show x = genericShow x
 
 -- unknown node type, with the type string and text contents
 data UnknownExpr = Unknown String String
