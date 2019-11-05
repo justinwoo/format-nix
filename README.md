@@ -1,5 +1,11 @@
 # format-nix
 
+### Update
+
+You might consider using nixpkgs-fmt nowadays: https://github.com/nix-community/nixpkgs-fmt
+
+---
+
 [![Build Status](https://travis-ci.com/justinwoo/format-nix.svg?branch=master)](https://travis-ci.com/justinwoo/format-nix)
 
 A simple formatter for Nix using [tree-sitter-nix](https://github.com/cstrahan/tree-sitter-nix).
